@@ -10,7 +10,7 @@ pip install Flask
 
 ```
 cd web-interface
-export FLASK_APP=main.py
+export FLASK_APP=server.py
 export FLASK_DEBUG=1
 flask run
 ```
