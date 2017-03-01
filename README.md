@@ -1,18 +1,7 @@
 # littleGoogle
-Web interface is based on Flask (Python)
+Web interface is based on Spark (Java8)
+The project is using Maven to manage dependencies
 
-## Install Flask - For more info http://flask.pocoo.org/docs/0.12/installation/
-```
-pip install Flask
-```
+##For more info about Spark http://sparkjava.com/documentation.html
 
-## Run the following commands to run the Web Interface
-
-```
-cd web-interface
-export FLASK_APP=server.py
-export FLASK_DEBUG=1
-flask run
-```
-
-## Visit http://localhost:5000/ to access Little Google
+Run the Java program and visit http://localhost:8000/home.html to access Little Google
