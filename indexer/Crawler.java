@@ -21,6 +21,14 @@ public class Crawler
 	private InvertedIndex index;
 	private StopStem stopStem;
 
+	//Crawl for num_pages pages, default is 30
+	private static final int MAX_CRAWLED_PAGES = 30;
+	// Set the crawling target domain
+	private static final String TAGRET_CRAWLED_DOMAIN = "http://www.cs.ust.hk";
+	// Set stopword resource address
+	private static final String STOPWORD_SOURCE_DIRCTORY = "stopwords.txt";
+	
+
 	Crawler(String _url, InvertedIndex _index, StopStem _stopStem)
 	{
 		url = new Vector<String>();
@@ -106,13 +114,11 @@ public class Crawler
 		{
 			//Initialize
 			System.out.println("Initializing..");
-			Crawler crawler = new Crawler("http://www.cs.ust.hk", 
+			Crawler crawler = new Crawler(TAGRET_CRAWLED_DOMAIN, 
 							  new InvertedIndex("indexDB", "htl"), 
-							  new StopStem("stopwords.txt"));
+							  new StopStem(STOPWORD_SOURCE_DIRCTORY));
 
-			//Crawl for num_pages pages, default is 30
-			int num_pages = 30;
-			for(int i = 0; i < num_pages; i ++)
+			for(int i = 0; i < MAX_CRAWLED_PAGES; i ++)
 			{
 				System.out.println("Website" + i);
 				//Extract words

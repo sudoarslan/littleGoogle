@@ -17,7 +17,7 @@ public class StopStem
 		return stopWords.contains(str);	
 	}
 
-	public StopStem(String str)
+	public StopStem(String stopword_source_str)
 	{
 		super();
 
@@ -26,7 +26,7 @@ public class StopStem
 			porter = new Porter();
 			stopWords = new java.util.HashSet();
 
-			BufferedReader br = new BufferedReader(new FileReader("stopwords.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(stopword_source_str));
 
 			String currentLine;
 
