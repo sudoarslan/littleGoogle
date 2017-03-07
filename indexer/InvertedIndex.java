@@ -48,7 +48,7 @@ public class InvertedIndex
 	public void appendEntry(String word, int x, int y) throws IOException
 	{
 		String content = (String)hashtable.get(word);
-		if (content == null)
+		if(content == null)
 			content = "doc" + x + " " + y;
 		else
 			content += " doc" + x + " " + y;
@@ -70,10 +70,16 @@ public class InvertedIndex
 
 		//Split value into multiple entries with whitespace regex
 		String[] entry = content.split("\\s+");
-		for(int index = 0; index < entry.length; index++)
+		int index;
+		for(index = 0; index < entry.length; index++)
 		{
 			if(entry[index].equals(column))
 				entry[index + 1] = y + "";
+		}
+		if(index == entry.length)
+		{
+			appendEntry(word, x, y);
+			return;
 		}
 		content = Arrays.toString(entry).replaceAll(",", "").replaceAll("\\[|\\]", "");
 		hashtable.put(word, content);
