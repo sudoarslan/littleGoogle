@@ -74,7 +74,10 @@ public class InvertedIndex
 		for(index = 0; index < entry.length; index++)
 		{
 			if(entry[index].equals(column))
+			{
 				entry[index + 1] = y + "";
+				break;
+			}
 		}
 		if(index == entry.length)
 		{
