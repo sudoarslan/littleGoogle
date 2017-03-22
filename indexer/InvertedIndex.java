@@ -26,11 +26,16 @@ public class InvertedIndex
 		recman = RecordManagerFactory.createRecordManager(recordmanager);
 		long recid = recman.getNamedObject(objectname);
 
+		System.out.println("Directory: " + System.getProperty("user.dir"));
+		System.out.println("Manager name: " + recordmanager);
+		System.out.println("Object name: " + objectname);
+
 		if (recid != 0)
 			hashtable = HTree.load(recman, recid);
 		else
 		{
 			hashtable = HTree.createInstance(recman);
+			System.out.println("New ht recid = " + hashtable.getRecid());
 			recman.setNamedObject( objectname, hashtable.getRecid() );
 		}
 	}
@@ -112,13 +117,13 @@ public class InvertedIndex
 	{
 		try
 		{
-			InvertedIndex index = new InvertedIndex("indexDB","ht1");
+			InvertedIndex index = new InvertedIndex("indexDB","htl");
 
 			System.out.println("Reading JDBM");
 
 			index.printAll();
 		}
-		catch(IOException ex)
+		catch(Exception ex)
 		{
 			System.err.println(ex.toString());
 		}

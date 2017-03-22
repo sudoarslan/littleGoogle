@@ -1,2 +1,8 @@
 .idea/
-target/
+target/indexer/Crawler.class
+indexer/InvertedIndex.class
+indexer/StopStem.class
+*.db
+*.lg
+*.class
+Test.class

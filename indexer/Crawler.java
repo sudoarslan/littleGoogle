@@ -27,7 +27,7 @@ public class Crawler
 	private static final String TAGRET_CRAWLED_DOMAIN = "http://www.cs.ust.hk";
 	// Set stopword resource address
 	private static final String STOPWORD_SOURCE_DIRCTORY = "stopwords.txt";
-	
+
 
 	Crawler(String _url, InvertedIndex _index, StopStem _stopStem)
 	{
@@ -58,10 +58,10 @@ public class Crawler
 	{
 		Vector<String> words = new Vector<String>();
 		StringBean bean = new StringBean();
-	
+
 		if(url.size() == 0)
 			return words;
-	
+
 		bean.setURL(url.firstElement());
 		bean.setLinks(false);
 		String contents = bean.getStrings();
@@ -97,7 +97,7 @@ public class Crawler
 	{
 		Vector<String> result = new Vector<String>();
 		LinkBean bean = new LinkBean();
-	
+
 		if(url.size() == 0)
 			return;
 
@@ -115,8 +115,8 @@ public class Crawler
 			//Initialize
 			System.out.println("Initializing..");
 			Crawler crawler = new Crawler(TAGRET_CRAWLED_DOMAIN, 
-							  new InvertedIndex("indexDB", "htl"), 
-							  new StopStem(STOPWORD_SOURCE_DIRCTORY));
+					new InvertedIndex("indexDB", "htl"), 
+					new StopStem(STOPWORD_SOURCE_DIRCTORY));
 
 			for(int i = 0; i < MAX_CRAWLED_PAGES; i ++)
 			{
