@@ -48,9 +48,9 @@ public class Crawler
 		return url.size() == 0;
 	}
 
-	public String popURL()
+	public String getURL()
 	{
-		return url.remove(0);
+		return url.firstElement();
 	}
 
 	public void Finalize() throws Exception
@@ -89,8 +89,12 @@ public class Crawler
 	}
 
 	//Find the occurence of each word in the string vector, save the frequency to the database
-	public void updateWordIndex(int doc_id, Vector<String> words) throws Exception
+	public void updateWordIndex(String url, Vector<String> words) throws Exception
 	{
+		int doc_id = database.urlMapTable.getEntry(url);
+		if(doc_id == -1)
+			throw new Exception("Link not found, cannot insert word to index");
+
 		HashSet<String> unique = new HashSet<String>(words);
 
 		for(String word: unique)
@@ -98,32 +102,40 @@ public class Crawler
 			int freq = Collections.frequency(words, word);
 			database.invertedIndex.updateEntry(word, str(doc_id), str(freq));
 
-			int word_id = database.wordMapTable.getEntry(word);
-			if(word_id == -1)
-				word_id = database.wordMapTable.appendEntry(word);
+			int word_id = database.wordMapTable.appendEntry(word);
 			database.forwardIndex.updateEntry(str(doc_id), str(word_id), str(freq));
 		}
 	}
 
-	public void updateLinkIndex(String url, int doc_id) throws Exception
+	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
-		database.linkMapTable.appendEntry(url);
+		int url_id = database.urlMapTable.appendEntry(url);
+
+		database.linkIndex.removeRow(str(url_id));
+
+		int link_id = 0;
+		for(String link: links)
+			database.linkIndex.appendEntry(str(url_id), str(link_id), links.elementAt(link_id++));
 	}
 
 	//Extract all links in the website
-	public void extractLinks() throws Exception
+	public Vector<String> extractLinks() throws Exception
 	{
-		Vector<String> result = new Vector<String>();
+		Vector<String> link = new Vector<String>();
 		LinkBean bean = new LinkBean();
 
 		if(url.size() == 0)
-			return;
+			return link;
 
 		bean.setURL(url.remove(0));
 		URL[] urls = bean.getLinks();
 
 		for (URL s : urls)
-			url.add(s.toString());
+			link.add(s.toString());
+	
+		url.addAll(link);
+
+		return link;
 	}
 
 	public static void main (String[] args)
@@ -134,19 +146,17 @@ public class Crawler
 			System.out.println("Initializing..");
 			Crawler crawler = new Crawler();
 
-			for(int i = 0; i < MAX_CRAWLED_PAGES; i ++)
+			for(int i = 0; i < MAX_CRAWLED_PAGES && !crawler.isEmpty(); i ++)
 			{
+				//Pops first element, i.e. BFS
 				System.out.print("Website " + i + ": ");
-				//Extract words
-				crawler.updateWordIndex(i, crawler.extractWords());
+				String url = crawler.getURL();
+				System.out.println(url);
 
 				//Extract links
-				crawler.extractLinks();
-				String url = crawler.popURL();
-				crawler.updateLinkIndex(url, i);
-
-				//Pop the first url, i.e. BFS
-				System.out.println(url);
+				crawler.updateLinkIndex(url, crawler.extractLinks());
+				//Extract words
+				crawler.updateWordIndex(url, crawler.extractWords());	
 			}
 
 			//Save the database

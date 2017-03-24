@@ -1,18 +1,18 @@
-Crawler now gives 4 tables which are stored in indexDB:
-
-Inverted Index
-Forward Index
-Word => Word-ID mapping
-URL => URL-ID mapping
-
+Crawler now gives 5 tables which are stored in indexDB:
 
 To crawl the websites, simply run Crawler
 e.g. java [link libraries] Crawler
 
-To view table data, run Database with 1 argument, which is one of the hashtable names:
+To view index data, run Database with 1 argument, which is one of the hashtable names:
 "inverted" -- Inverted Index table
 "forward"  -- Forward Index table
-"word"	   -- Word => Word-ID table
-"link"	   -- URL => URL-ID table
+"link"	   -- Child links table
 
-e.g.java [link libraries] Database inverted
+To view mapTable data, run Database with 2 argument, which is one of the hashtable names and the direction:
+"word"	   		-- Word-ID => Word table
+"word backward" -- Word => Word-ID table
+"url"	   		-- URL-ID => URL table
+"url backward"  -- URL => URL-ID table
+
+e.g. java [link libraries] Database url backward
+	 java [link libraries] Database link

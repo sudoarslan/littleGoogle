@@ -7,48 +7,82 @@ import java.util.Arrays;
 
 public class MapTable
 {
-	private HTree Hashtable;
+	private HTree ForwardHashtable;
+	private HTree BackwardHashtable;
 
-	MapTable(HTree hash_table) throws IOException
+	MapTable(HTree forward_hash_table, HTree backward_hash_table) throws IOException
 	{
-		Hashtable = hash_table;
-		if(Hashtable.get("max_id") == null)
-			Hashtable.put("max_id", 0);
+		ForwardHashtable = forward_hash_table;
+		BackwardHashtable = backward_hash_table;
+
+		if(BackwardHashtable.get("max_id") == null)
+			BackwardHashtable.put("max_id", 0);
 	}
 
-	//Appends entry
-	public int appendEntry(String key) throws IOException
+	//Appends entry, assume only crawler uses this, so no foward insertion
+	public int appendEntry(String value) throws IOException
 	{
-		Integer max_id = (Integer)Hashtable.get("max_id");
-		Hashtable.put(key, max_id);
-		Hashtable.put("max_id", max_id + 1);
+		Integer id = (Integer)BackwardHashtable.get(value);
+		if(id != null)
+			return id;
+
+		Integer max_id = (Integer)BackwardHashtable.get("max_id");
+		ForwardHashtable.put(max_id, value);
+		BackwardHashtable.put(value, max_id);
+		BackwardHashtable.put("max_id", max_id + 1);
 		return max_id;
 	}
 
 	//Updates entry, for the sake of consistency this method exists
-	public void updateEntry(String key, int value) throws IOException
+	public void updateEntry(String value) throws IOException
 	{
-		Hashtable.put(key, value);
+		appendEntry(value);
 	}
 
 	//Retrieve particular entry value
-	public int getEntry(String key) throws IOException
+	public String getEntry(int key) throws IOException
 	{
-		Integer value = (Integer)Hashtable.get(key);
-		return value == null? -1: value;
+		return (String)ForwardHashtable.get(key);
 	}
 
-	//Removes entire row
-	public void removeRow(String key) throws IOException
+	public int getEntry(String value) throws IOException
 	{
-		Hashtable.remove(key);
+		Integer key = (Integer)BackwardHashtable.get(value);
+		return key == null? -1: key;
+	}
+
+	//Removes row given key
+	public void removeRow(int key) throws IOException
+	{
+		String value = (String)ForwardHashtable.get(key);
+		ForwardHashtable.remove(key);
+		BackwardHashtable.remove(value);
 	} 
 
-	public void printAll() throws IOException
+	//Removes row given value
+	public void removeRow(String value) throws IOException
 	{
-		FastIterator iter = Hashtable.keys();
-		String key;
-		while( (key=(String)iter.next()) != null )
-			System.out.println(key + " = " + Hashtable.get(key));
+		Integer key = (Integer)BackwardHashtable.get(value);
+		ForwardHashtable.remove(key);
+		BackwardHashtable.remove(value);
+	}
+
+	public void printAll(boolean forward) throws IOException
+	{
+		if(forward)
+		{
+			FastIterator iter = ForwardHashtable.keys();
+			Integer key;
+			while( (key=(Integer)iter.next()) != null )
+				System.out.println(key + " = " + ForwardHashtable.get(key));
+		}
+		else
+		{
+			FastIterator iter = BackwardHashtable.keys();
+			String value;
+			while( (value=(String)iter.next()) != null )
+				System.out.println(value + " = " + BackwardHashtable.get(value));
+
+		}
 	}    
 }
