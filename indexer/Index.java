@@ -69,7 +69,7 @@ public class Index
 	public String getEntry(String key, String id) throws IOException
 	{
 		String column = Identifier + id;
-		String content = (String)Hashtable.get(key);	
+		String content = (String)Hashtable.get(key);
 		String[] entry = content.split("\\s+");
 		for(int index = 0; index < entry.length; index++)
 			if(entry[index].equals(column))
@@ -79,11 +79,19 @@ public class Index
 		return null;
 	}
 
+	//Retrieve particular entry value
+	public String getAllEntries(String key) throws IOException
+	{
+		String content = (String)Hashtable.get(key);
+
+		return content;
+	}
+
 	//Removes entire row
 	public void removeRow(String key) throws IOException
 	{
 		Hashtable.remove(key);
-	} 
+	}
 
 	public void printAll() throws IOException
 	{
@@ -91,5 +99,5 @@ public class Index
 		String key;
 		while( (key=(String)iter.next()) != null )
 			System.out.println(key + " = " + Hashtable.get(key));
-	}    
+	}
 }
