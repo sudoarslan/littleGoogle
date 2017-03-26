@@ -30,16 +30,20 @@ public class Database
 		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[4]), LoadOrCreate("inverted_" + HASHTABLE_NAME[4]));
 	}
 
+	// Load the database given the target table name, or create a new one when first try
 	private HTree LoadOrCreate(String hashtable_name) throws IOException
 	{
+		// Load the target database
 		long recid = recman.getNamedObject(hashtable_name);
 		if(recid != 0)
 		{
+			// Return Hash Table if found
 			System.out.println("Hashtable found, id: " + recid);
 			return HTree.load(recman, recid);
 		}
 		else
 		{
+			// Create a new Hash Table if not found
 			HTree hashtable = HTree.createInstance(recman);
 			recid = hashtable.getRecid();
 			recman.setNamedObject(hashtable_name, recid);
@@ -48,6 +52,7 @@ public class Database
 		}
 	}
 
+	// Save and confirm the changes of the database
 	public void Finalize() throws IOException
 	{
 		recman.commit();
@@ -61,9 +66,12 @@ public class Database
 		{
 			Database db = new Database();
 
+			// Read in the prompt input from user
 			String hashtable_name 	= args[0];
+			// Reverse the display order when the second input is "backward"
 			boolean order 			= args.length > 1? !args[1].equals("backward"): true;
 
+			// Print all the data in the Hash Table
 			if(hashtable_name.equals("inverted"))
 			{
 				System.out.println("Inverted");

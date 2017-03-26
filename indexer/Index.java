@@ -20,10 +20,12 @@ public class Index
 		Identifier = identifier;
 	}
 
-	//Appends entry
+	// Appends entry: Create or append
 	public void appendEntry(String key, String id, String value) throws IOException
 	{
+		// Get the key
 		String content = (String)Hashtable.get(key);
+		// Create a new entry if not found; Append to the entry if found
 		if(content == null)
 			content = Identifier + id + " " + value;
 		else
@@ -32,19 +34,21 @@ public class Index
 		Hashtable.put(key, content);
 	}
 
-	//Updates entry
+	// Updates entry: 
 	public void updateEntry(String key, String id, String value) throws IOException
 	{
-		//Search query for document id(int x)
+		// Search query for document id(int x)
 		String column = Identifier + id;
+		// Get the key
 		String content = (String)Hashtable.get(key);
+		// Append to the entry if not found
 		if(content == null)
 		{
 			appendEntry(key, id, value);
 			return;
 		}
 
-		//Split value into multiple entries with whitespace regex
+		// Split value into multiple entries with whitespace regex
 		String[] entry = content.split("\\s+");
 		int index;
 		for(index = 0; index < entry.length; index++)
@@ -65,7 +69,7 @@ public class Index
 		Hashtable.put(key, content);
 	}
 
-	//Retrieve particular entry value
+	// Retrieve particular entry value
 	public String getEntry(String key, String id) throws IOException
 	{
 		String column = Identifier + id;
@@ -79,7 +83,7 @@ public class Index
 		return null;
 	}
 
-	//Retrieve particular entry value
+	// Retrieve particular entry value
 	public String getAllEntries(String key) throws IOException
 	{
 		String content = (String)Hashtable.get(key);
@@ -87,7 +91,7 @@ public class Index
 		return content;
 	}
 
-	//Removes entire row
+	// Removes entire row
 	public void removeRow(String key) throws IOException
 	{
 		Hashtable.remove(key);

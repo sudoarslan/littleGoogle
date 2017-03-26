@@ -91,30 +91,42 @@ public class Crawler
 	//Find the occurence of each word in the string vector, save the frequency to the database
 	public void updateWordIndex(String url, Vector<String> words) throws Exception
 	{
+		// Get the Document ID
 		int doc_id = database.urlMapTable.getEntry(url);
 		if(doc_id == -1)
 			throw new Exception("Link not found, cannot insert word to index");
 
+		// Collect all the words in a Hash Set
 		HashSet<String> unique = new HashSet<String>(words);
 
+		// Iterate through all the words in the document
 		for(String word: unique)
 		{
+			// Get the term frequency(tf) of the word
 			int freq = Collections.frequency(words, word);
+			// Insert the word into Inverted File: [word, document ID, term frequency]
 			database.invertedIndex.updateEntry(word, str(doc_id), str(freq));
 
+			// Insert the word into wordMapTable and get the word ID
 			int word_id = database.wordMapTable.appendEntry(word);
+			// Insert the word into the Forward Index: [document ID, word ID, term frequency]
 			database.forwardIndex.updateEntry(str(doc_id), str(word_id), str(freq));
 		}
 	}
 
+	// 
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
+		// Insert the url into urlMapTable and get the url ID
 		int url_id = database.urlMapTable.appendEntry(url);
 
+		// Remove the out-dated url's child links data??
 		database.linkIndex.removeRow(str(url_id));
 
+		// Iterate through all the child links of the url
 		int link_id = 0;
 		for(String link: links)
+			// Insert the child links into the Link Index: [url ID, child link ID, child link(url)]
 			database.linkIndex.appendEntry(str(url_id), str(link_id), links.elementAt(link_id++));
 	}
 
@@ -142,24 +154,24 @@ public class Crawler
 	{
 		try
 		{
-			//Initialize
+			// Initialization
 			System.out.println("Initializing..");
 			Crawler crawler = new Crawler();
 
 			for(int i = 0; i < MAX_CRAWLED_PAGES && !crawler.isEmpty(); i ++)
 			{
-				//Pops first element, i.e. BFS
+				// Pops first element, i.e. BFS
 				System.out.print("Website " + i + ": ");
 				String url = crawler.getURL();
 				System.out.println(url);
 
-				//Extract links
+				// Extract links: create Link Index
 				crawler.updateLinkIndex(url, crawler.extractLinks());
-				//Extract words
+				// Extract words: create Inverted Index & Forward Index
 				crawler.updateWordIndex(url, crawler.extractWords());	
 			}
 
-			//Save the database
+			// Save the database
 			crawler.Finalize();
 		}
 		catch (Exception e)
