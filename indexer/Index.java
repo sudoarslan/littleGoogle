@@ -83,7 +83,7 @@ public class Index
 		return null;
 	}
 
-	// Retrieve particular entry value
+	// Retrieve all entries
 	public String getAllEntries(String key) throws IOException
 	{
 		String content = (String)Hashtable.get(key);
