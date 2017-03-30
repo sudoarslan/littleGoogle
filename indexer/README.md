@@ -1,4 +1,4 @@
-#Indexer
+##Indexer
 
 To compile everything, run
 
@@ -19,9 +19,7 @@ hashtable names:
 + `forward`: Forward Index table
 + `link`: Child links table
 
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database inverted`
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database forward`
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database link`
+`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database inverted`  
 
 ### MapTable data
 
@@ -32,7 +30,12 @@ To view mapTable data, run `Database` with **1 or 2 argument**, which is one of 
 + `url`: URL-ID => URL table
 + `url backward`: URL => URL-ID table
 
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database word backward`
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database word forward`
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database url backward`
-`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database url forward`
+`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Database word backward` 
+
+### Tester program
+
+To generate the crawling result, simply run `Test`
+
+`java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Test` 
+
+A text file `spider_result.txt` will be generated with the required format
