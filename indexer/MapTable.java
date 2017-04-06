@@ -47,7 +47,7 @@ public class MapTable
 		return (String)ForwardHashtable.get(key);
 	}
 
-	public int getEntry(String value) throws IOException
+	public int getKey(String value) throws IOException
 	{
 		Integer key = (Integer)BackwardHashtable.get(value);
 		return key == null? -1: key;

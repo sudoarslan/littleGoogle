@@ -80,10 +80,12 @@ public class Test
 			writer.println(lastModified+ ", "+ size);
 
 			// keywords and frequencyies
-			String strI = ""+ i;
-			String word_freq = forwardIndex.getAllEntries(strI);
+			Vector<Index.Pair> word_freq = forwardIndex.getAllEntries(i);
 
-			if (word_freq != null){
+			for(int j = 0; j < word_freq.size()	; j++)
+				writer.format("%s %s;", wordMapTable.getEntry(word_freq.elementAt(j).Key), word_freq.elementAt(j).Value);
+
+			/*if (word_freq != null){
 				String[] pairs = word_freq.split("\\s+");
 				for(int j = 0; j < pairs.length; j += 2){
 					int word_id = Integer.parseInt(pairs[j].substring(4));
@@ -92,17 +94,20 @@ public class Test
 					writer.format("%s %s;", word, freq);
 				}
 				writer.println("");
-			}
+			}*/
 
 			// child links
-			String child_links = linkIndex.getAllEntries(strI);
+			Vector<Index.Pair> child_links = linkIndex.getAllEntries(i);
 
-			if (child_links != null){
+			for(int j = 0; j < child_links.size(); j++)
+				writer.println(urlMapTable.getEntry(child_links.elementAt(j).Value));
+
+			/*if (child_links != null){
 				String[] link_pairs = child_links.split("\\s+");
 				for(int j = 0; j < link_pairs.length; j += 2){
 					writer.println(link_pairs[j+1]);
 				}
-			}
+			}*/
 
 			writer.println("-------------------------------------------------------------------------------------------");
 			}

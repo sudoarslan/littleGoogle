@@ -18,7 +18,7 @@ public class Crawler
 	private Vector<String> url;
 
 	// Crawl for num_pages pages, default is 30
-	private static final int MAX_CRAWLED_PAGES = 30;
+	private static final int MAX_CRAWLED_PAGES = 1000;
 	// Set the crawling target domain
 	private static final String TARGET_CRAWLED_DOMAIN = "http://www.cse.ust.hk";
 	// Set the stopword resource path
@@ -37,12 +37,7 @@ public class Crawler
 
 		stopStem = new StopStem(STOPWORD_SOURCE_DIRECTORY);
 	}
-
-	private String str(int v)
-	{
-		return Integer.toString(v);
-	}
-
+	
 	public boolean isEmpty()
 	{
 		return url.size() == 0;
@@ -92,7 +87,7 @@ public class Crawler
 	public void updateWordIndex(String url, Vector<String> words) throws Exception
 	{
 		// Get the Document ID
-		int doc_id = database.urlMapTable.getEntry(url);
+		int doc_id = database.urlMapTable.getKey(url);
 		if(doc_id == -1)
 			throw new Exception("Link not found, cannot insert word to index");
 
@@ -104,13 +99,15 @@ public class Crawler
 		{
 			// Get the term frequency(tf) of the word
 			int freq = Collections.frequency(words, word);
-			// Insert the word into Inverted File: [word, document ID, term frequency]
-			database.invertedIndex.updateEntry(word, str(doc_id), str(freq));
 
 			// Insert the word into wordMapTable and get the word ID
 			int word_id = database.wordMapTable.appendEntry(word);
+
+			// Insert the word into Inverted File: [word, document ID, term frequency]
+			database.invertedIndex.updateEntry(word_id, doc_id, freq);
+
 			// Insert the word into the Forward Index: [document ID, word ID, term frequency]
-			database.forwardIndex.updateEntry(str(doc_id), str(word_id), str(freq));
+			database.forwardIndex.updateEntry(doc_id, word_id, freq);
 		}
 	}
 
@@ -120,14 +117,17 @@ public class Crawler
 		// Insert the url into urlMapTable and get the url ID
 		int url_id = database.urlMapTable.appendEntry(url);
 
-		// Remove the out-dated url's child links data??
-		database.linkIndex.removeRow(str(url_id));
+		// Remove the out-dated url's child links data
+		database.linkIndex.removeRow(url_id);
 
 		// Iterate through all the child links of the url
-		int link_id = 0;
+		int index = 0;
 		for(String link: links)
-			// Insert the child links into the Link Index: [url ID, child link ID, child link(url)]
-			database.linkIndex.appendEntry(str(url_id), str(link_id), links.elementAt(link_id++));
+		{
+			int link_id = database.urlMapTable.appendEntry(link);
+			// Insert the child links into the Link Index: [url ID, link index, child link id]
+			database.linkIndex.appendEntry(url_id, index++, link_id);
+		}
 	}
 
 	//Extract all links in the website

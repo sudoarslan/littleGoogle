@@ -19,10 +19,28 @@ public class Index
 		Hashtable = hash_table;
 		Identifier = identifier;
 	}
+	
+	public class Pair
+	{
+		Pair(int key, int value){ Key = key; Value = value;}
+		public int Key;
+		public int Value;
+	}
+
+	public String Str(int value)
+	{
+		return Integer.toString(value);
+	}
+
+	public int Int(String value)
+	{
+		return Integer.parseInt(value);
+	}
 
 	// Appends entry: Create or append
-	public void appendEntry(String key, String id, String value) throws IOException
+	public void appendEntry(int ikey, int iid, int ivalue) throws IOException
 	{
+		String key = Str(ikey), id = Str(iid), value = Str(ivalue);
 		// Get the key
 		String content = (String)Hashtable.get(key);
 		// Create a new entry if not found; Append to the entry if found
@@ -35,8 +53,9 @@ public class Index
 	}
 
 	// Updates entry: 
-	public void updateEntry(String key, String id, String value) throws IOException
+	public void updateEntry(int ikey, int iid, int ivalue) throws IOException
 	{
+		String key = Str(ikey), id = Str(iid), value = Str(ivalue);
 		// Search query for document id(int x)
 		String column = Identifier + id;
 		// Get the key
@@ -44,7 +63,7 @@ public class Index
 		// Append to the entry if not found
 		if(content == null)
 		{
-			appendEntry(key, id, value);
+			appendEntry(ikey, iid, ivalue);
 			return;
 		}
 
@@ -61,7 +80,7 @@ public class Index
 		}
 		if(index == entry.length)
 		{
-			appendEntry(key, id, value);
+			appendEntry(ikey, iid, ivalue);
 			return;
 		}
 
@@ -70,30 +89,42 @@ public class Index
 	}
 
 	// Retrieve particular entry value
-	public String getEntry(String key, String id) throws IOException
+	public int getEntry(int ikey, int iid) throws IOException
 	{
+		String key = Str(ikey), id = Str(iid);
 		String column = Identifier + id;
 		String content = (String)Hashtable.get(key);
 		String[] entry = content.split("\\s+");
 		for(int index = 0; index < entry.length; index++)
 			if(entry[index].equals(column))
-				return entry[index + 1];
+				return Int(entry[index + 1]);
 
 		//Entry not found
-		return null;
+		return -1;
 	}
 
 	// Retrieve all entries
-	public String getAllEntries(String key) throws IOException
+	public Vector<Pair> getAllEntries(int ikey) throws IOException
 	{
-		String content = (String)Hashtable.get(key);
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
 
-		return content;
+		if(value == null)
+			return new Vector<Pair>();
+
+		Vector<Pair> freq = new Vector<Pair>();
+
+		String[] list = value.split("\\s+");
+		for(int i = 0; i < list.length; i += 2)
+			freq.add(new Pair(Int(list[i].replaceAll(Identifier, "")), Int(list[i + 1])));
+
+		return freq;
 	}
 
 	// Removes entire row
-	public void removeRow(String key) throws IOException
+	public void removeRow(int ikey) throws IOException
 	{
+		String key = Str(ikey);
 		Hashtable.remove(key);
 	}
 
