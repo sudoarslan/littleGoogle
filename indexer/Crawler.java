@@ -18,9 +18,9 @@ public class Crawler
 	private Vector<String> url;
 
 	// Crawl for num_pages pages, default is 30
-	private static final int MAX_CRAWLED_PAGES = 1000;
+	private static final int MAX_CRAWLED_PAGES = 300;
 	// Set the crawling target domain
-	private static final String TARGET_CRAWLED_DOMAIN = "http://www.cse.ust.hk";
+	private static final String TARGET_CRAWLED_DOMAIN = "https://course.cse.ust.hk/comp4321/labs/TestPages/testpage.htm";
 	// Set the stopword resource path
 	private static final String STOPWORD_SOURCE_DIRECTORY = "stopwords.txt";
 
@@ -37,7 +37,7 @@ public class Crawler
 
 		stopStem = new StopStem(STOPWORD_SOURCE_DIRECTORY);
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return url.size() == 0;
@@ -75,9 +75,9 @@ public class Crawler
 		Vector<String> stemmed = new Vector<String>();
 		for(String word : words)
 		{
-			String lword = word.toLowerCase();
-			if(!stopStem.isStopWord(lword) && lword.matches("[a-z]+"))
-				stemmed.add(lword);
+			String p_word = word.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase();
+			if(!p_word.isEmpty() && !stopStem.isStopWord(p_word))
+				stemmed.add(stopStem.stem(p_word));
 		}
 
 		return stemmed;
@@ -111,7 +111,7 @@ public class Crawler
 		}
 	}
 
-	// 
+	//
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
 		// Insert the url into urlMapTable and get the url ID
@@ -139,12 +139,17 @@ public class Crawler
 		if(url.size() == 0)
 			return link;
 
-		bean.setURL(url.remove(0));
+		String parent = url.remove(0);
+
+		bean.setURL(parent);
 		URL[] urls = bean.getLinks();
+
+		System.out.println(urls.length);
 
 		for (URL s : urls)
 			link.add(s.toString());
-	
+			//link.add(s.toURI().resolve(parent).toString());
+		
 		url.addAll(link);
 
 		return link;
@@ -168,7 +173,7 @@ public class Crawler
 				// Extract links: create Link Index
 				crawler.updateLinkIndex(url, crawler.extractLinks());
 				// Extract words: create Inverted Index & Forward Index
-				crawler.updateWordIndex(url, crawler.extractWords());	
+				crawler.updateWordIndex(url, crawler.extractWords());
 			}
 
 			// Save the database
@@ -181,4 +186,3 @@ public class Crawler
 		}
 	}
 }
-

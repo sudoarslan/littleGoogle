@@ -19,13 +19,6 @@ public class Index
 		Hashtable = hash_table;
 		Identifier = identifier;
 	}
-	
-	public class Pair
-	{
-		Pair(int key, int value){ Key = key; Value = value;}
-		public int Key;
-		public int Value;
-	}
 
 	public String Str(int value)
 	{

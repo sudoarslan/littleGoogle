@@ -80,7 +80,7 @@ public class Test
 			writer.println(lastModified+ ", "+ size);
 
 			// keywords and frequencyies
-			Vector<Index.Pair> word_freq = forwardIndex.getAllEntries(i);
+			Vector<Pair> word_freq = forwardIndex.getAllEntries(i);
 
 			for(int j = 0; j < word_freq.size()	; j++)
 				writer.format("%s %s;", wordMapTable.getEntry(word_freq.elementAt(j).Key), word_freq.elementAt(j).Value);
@@ -97,7 +97,7 @@ public class Test
 			}*/
 
 			// child links
-			Vector<Index.Pair> child_links = linkIndex.getAllEntries(i);
+			Vector<Pair> child_links = linkIndex.getAllEntries(i);
 
 			for(int j = 0; j < child_links.size(); j++)
 				writer.println(urlMapTable.getEntry(child_links.elementAt(j).Value));
