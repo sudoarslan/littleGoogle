@@ -54,7 +54,7 @@ public class Querier
 		//convert words to word_ids, skip if not found in database
 		Vector<Integer> query_id = database.wordMapTable.valueToKey(p_query);
 
-		//create tf for query
+		//create weight for query
 		HashSet<Integer> unique_id = new HashSet<Integer>(query_id);
 		for(int id : unique_id)
 			query_weight.add(new FPair(id, Collections.frequency(query_id, id) * idf(id)));
@@ -102,6 +102,32 @@ public class Querier
 		return links;
 	}
 
+	//Prints all websites containing any of the query words
+	public void WordInDoc(String query) throws Exception
+	{
+		//split and filter query string to vector space
+		String[] s_query = query.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase().split(" ");
+
+		//filter stopwords and stem
+		Vector<String> p_query = stopStem.stopAndStem(s_query);
+
+		//convert words to word_ids, skip if not found in database
+		Vector<Integer> query_id = database.wordMapTable.valueToKey(p_query);
+
+		//distinct()
+		HashSet<Integer> unique_id = new HashSet<Integer>(query_id);
+		for(int id : unique_id)
+		{
+			System.out.println(database.wordMapTable.getEntry(id) + ": ");
+			
+			Vector<Pair> entries = database.invertedIndex.getAllEntries(id);
+			for(Pair entry : entries)
+				System.out.println(database.urlMapTable.getEntry(entry.Key));
+
+			System.out.println("\n\n");
+		}
+	}
+
 	public static void main(String[] args)
 	{
 		if(args.length == 0)
@@ -111,8 +137,10 @@ public class Querier
 		{
 			Querier querier = new Querier();
 
-			for(String s : querier.NaiveSearch(args[0], 10))
-				System.out.println(s);
+			querier.WordInDoc(args[0]);
+			
+			//for(String s : querier.NaiveSearch(args[0], 10))
+				//System.out.println(s);
 		}
 		catch (Exception e)
 		{
