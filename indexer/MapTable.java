@@ -3,7 +3,7 @@ import jdbm.helper.FastIterator;
 import java.io.IOException;
 import java.io.Serializable;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class MapTable
 {
@@ -18,6 +18,11 @@ public class MapTable
 		// max_id is default as 0
 		if(BackwardHashtable.get("max_id") == null)
 			BackwardHashtable.put("max_id", 0);
+	}
+
+	public int getMaxId() throws IOException
+	{
+		return (Integer)BackwardHashtable.get("max_id");
 	}
 
 	// Appends entry, assume only crawler uses this, so no foward insertion
@@ -67,6 +72,32 @@ public class MapTable
 		Integer key = (Integer)BackwardHashtable.get(value);
 		ForwardHashtable.remove(key);
 		BackwardHashtable.remove(value);
+	}
+
+	public Vector<Integer> valueToKey(Vector<String> values) throws IOException
+	{
+		Vector<Integer> keys = new Vector<Integer>();
+		for(String v : values)
+		{
+			int key = getKey(v);
+			if(key != -1)
+				keys.add(key);
+		}
+
+		return keys;
+	}
+
+	public Vector<String> keyToValue(Vector<Integer> keys) throws IOException
+	{
+		Vector<String> values = new Vector<String>();
+		for(int k : keys)
+		{
+			String value = getEntry(k);
+			if(value != null)
+				values.add(value);
+		}
+
+		return values;
 	}
 
 	public void printAll(boolean forward) throws IOException

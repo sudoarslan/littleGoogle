@@ -1,5 +1,6 @@
 import IRUtilities.*;
 import java.io.*;
+import java.util.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,12 +13,14 @@ public class StopStem
 	private Porter porter;
 	private java.util.HashSet stopWords;
 
+	private static final String STOPWORD_SOURCE_DIRECTORY = "stopwords.txt";
+
 	public boolean isStopWord(String str)
 	{
 		return stopWords.contains(str);	
 	}
 
-	public StopStem(String stopword_source_str)
+	public StopStem()
 	{
 		super();
 
@@ -26,7 +29,7 @@ public class StopStem
 			porter = new Porter();
 			stopWords = new java.util.HashSet();
 
-			BufferedReader br = new BufferedReader(new FileReader(stopword_source_str));
+			BufferedReader br = new BufferedReader(new FileReader(STOPWORD_SOURCE_DIRECTORY));
 
 			String currentLine;
 
@@ -44,9 +47,19 @@ public class StopStem
 		return porter.stripAffixes(str);
 	}
 
+	public Vector<String> stopAndStem(String[] str)
+	{
+		Vector<String> words = new Vector<String>();
+		for(String s : str)
+			if(!isStopWord(s))
+				words.add(stem(s));
+
+		return words;
+	}
+
 	public static void main(String[] arg)
 	{
-		StopStem stopStem = new StopStem("stopwords.txt");
+		StopStem stopStem = new StopStem();
 		String input="";
 		try
 		{

@@ -16,13 +16,12 @@ public class Crawler
 {
 	//URL queue
 	private Vector<String> url;
+	private Vector<String> history;
 
 	// Crawl for num_pages pages, default is 30
 	private static final int MAX_CRAWLED_PAGES = 300;
 	// Set the crawling target domain
 	private static final String TARGET_CRAWLED_DOMAIN = "https://course.cse.ust.hk/comp4321/labs/TestPages/testpage.htm";
-	// Set the stopword resource path
-	private static final String STOPWORD_SOURCE_DIRECTORY = "stopwords.txt";
 
 	//Imported packages for pipeline process
 	private Database database;
@@ -32,10 +31,10 @@ public class Crawler
 	{
 		url = new Vector<String>();
 		url.add(TARGET_CRAWLED_DOMAIN);
+		history = new Vector<String>();
 
 		database = new Database();
-
-		stopStem = new StopStem(STOPWORD_SOURCE_DIRECTORY);
+		stopStem = new StopStem();
 	}
 
 	public boolean isEmpty()
@@ -45,7 +44,17 @@ public class Crawler
 
 	public String getURL()
 	{
-		return url.firstElement();
+		return url.remove(0);
+	}
+
+	public void setHistory(String link)
+	{
+		history.add(link);
+	}
+
+	public boolean crawled(String link)
+	{
+		return history.indexOf(link) != -1;
 	}
 
 	public void Finalize() throws Exception
@@ -54,15 +63,12 @@ public class Crawler
 	}
 
 	//Extract words from the first url in the vector
-	public Vector<String> extractWords() throws Exception
+	public Vector<String> extractWords(String parent) throws Exception
 	{
 		Vector<String> words = new Vector<String>();
 		StringBean bean = new StringBean();
 
-		if(url.size() == 0)
-			return words;
-
-		bean.setURL(url.firstElement());
+		bean.setURL(parent);
 		bean.setLinks(false);
 		String contents = bean.getStrings();
 		StringTokenizer st = new StringTokenizer(contents);
@@ -131,28 +137,45 @@ public class Crawler
 	}
 
 	//Extract all links in the website
-	public Vector<String> extractLinks() throws Exception
+	public Vector<String> extractLinks(String parent) throws Exception
 	{
 		Vector<String> link = new Vector<String>();
 		LinkBean bean = new LinkBean();
 
-		if(url.size() == 0)
-			return link;
-
-		String parent = url.remove(0);
-
 		bean.setURL(parent);
 		URL[] urls = bean.getLinks();
 
-		System.out.println(urls.length);
-
 		for (URL s : urls)
-			link.add(s.toString());
-			//link.add(s.toURI().resolve(parent).toString());
-		
+		{
+			String str = s.toString().split("#")[0].split("\\?")[0].replaceAll("/$", "");
+			link.add(str);
+		}
+
 		url.addAll(link);
 
 		return link;
+	}
+
+	public boolean crawl() throws Exception
+	{
+		if(url.isEmpty())
+			throw new Exception("No more links");
+
+		// Pops first element, i.e. BFS
+		String link = getURL();
+		if(crawled(link))
+			return false;
+
+		System.out.println(link);
+
+		// Extract links: create Link Index
+		updateLinkIndex(link, extractLinks(link));
+		// Extract words: create Inverted Index & Forward Index
+		updateWordIndex(link, extractWords(link));
+
+		setHistory(link);
+
+		return true;
 	}
 
 	public static void main (String[] args)
@@ -163,17 +186,11 @@ public class Crawler
 			System.out.println("Initializing..");
 			Crawler crawler = new Crawler();
 
-			for(int i = 0; i < MAX_CRAWLED_PAGES && !crawler.isEmpty(); i ++)
+			for(int i = 0; i < MAX_CRAWLED_PAGES;)
 			{
-				// Pops first element, i.e. BFS
 				System.out.print("Website " + i + ": ");
-				String url = crawler.getURL();
-				System.out.println(url);
-
-				// Extract links: create Link Index
-				crawler.updateLinkIndex(url, crawler.extractLinks());
-				// Extract words: create Inverted Index & Forward Index
-				crawler.updateWordIndex(url, crawler.extractWords());
+				if(crawler.crawl())
+					i++;
 			}
 
 			// Save the database
