@@ -81,7 +81,7 @@ public class Crawler
 			{
 				Pair word = doc.get(j);
 				//length of entries per word = df of the word
-				database.vsmIndex.appendEntry(j, word.Key, word.Value * idf(word.Key));
+				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key));
 			}
 		}
 

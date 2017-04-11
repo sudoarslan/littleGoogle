@@ -8,6 +8,8 @@ public class Querier
 	private Database database;
 	private StopStem stopStem;
 
+	private static final int TOP_K_RESULTS = 10;
+
 	Querier() throws Exception
 	{
 		database = new Database();
@@ -40,8 +42,6 @@ public class Querier
 		dist_s1 = Math.sqrt(dist_s1);
 		dist_s2 = Math.sqrt(dist_s2);
 
-		System.out.println(score + "\t" + dist_s1 + "\t" + dist_s2);
-
 		return score / dist_s1 / dist_s2;
 	}
 
@@ -55,7 +55,8 @@ public class Querier
 		//filter stopwords and stem
 		Vector<String> p_query = stopStem.stopAndStem(s_query);
 
-		for(String s: p_query)
+		System.out.print("Stemmed query: ");
+		for(String s : p_query)
 			System.out.print(s + " ");
 		System.out.println("");
 
@@ -89,6 +90,7 @@ public class Querier
 			Vector<FPair> doc_weight = DocWeight(i);
 			if(doc_weight == null)
 				continue;
+
 			score.add(new FPair(i, CosSim(query_weight, doc_weight)));
 		}
 
@@ -142,7 +144,7 @@ public class Querier
 				if(query.equals("quit"))
 					break;
 
-				for(String s : querier.NaiveSearch(query, 10))
+				for(String s : querier.NaiveSearch(query, TOP_K_RESULTS))
 					System.out.println(s);
 			}
 		}
