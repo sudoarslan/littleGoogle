@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "word", "url"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url"};
 
 	private RecordManager recman;
 
@@ -17,6 +17,7 @@ public class Database
 	public Index	forwardIndex;
 	public Index	linkIndex;
 	public Index	vsmIndex;
+	public Index	positionIndex;
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
@@ -29,9 +30,10 @@ public class Database
 		forwardIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "W");
 		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "L");
 		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
+		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
 		
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[4]), LoadOrCreate("inverted_" + HASHTABLE_NAME[4]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
+		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
+		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
 	}
 
 	// Load the database given the target table name, or create a new one when first try
@@ -102,7 +104,11 @@ public class Database
 				System.out.println("VSMs");
 				db.vsmIndex.printAll();
 			}
-
+			else if(hashtable_name.equals("position"))
+			{
+				System.out.println("Positions");
+				db.positionIndex.printAll();
+			}
 			else if(hashtable_name.equals("word"))
 			{
 				System.out.println("Word");

@@ -50,8 +50,11 @@ public class StopStem
 	public Vector<String> stopAndStem(String[] str)
 	{
 		Vector<String> words = new Vector<String>();
+		if(str.length == 0)
+			return words;
+
 		for(String s : str)
-			if(!isStopWord(s))
+			if(!s.equals("") && !isStopWord(s))
 				words.add(stem(s));
 
 		return words;

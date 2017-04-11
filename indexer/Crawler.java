@@ -125,7 +125,6 @@ public class Crawler
 
 		// Collect all the words in a Hash Set
 		HashSet<String> unique = new HashSet<String>(words);
-
 		// Iterate through all the words in the document
 		for(String word: unique)
 		{
@@ -141,6 +140,12 @@ public class Crawler
 			// Insert the word into the Forward Index: [document ID, word ID, term frequency]
 			database.forwardIndex.updateEntry(doc_id, word_id, freq);
 		}
+
+		//Update word positions of a document
+		database.positionIndex.removeRow(doc_id);
+		for(int position = 0; position < words.size(); position++)
+			database.positionIndex.appendEntry(doc_id, position, database.wordMapTable.getKey(words.get(position)));
+
 	}
 
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
@@ -214,9 +219,10 @@ public class Crawler
 			System.out.print("Base URL: ");
 			for(int i = 1; i <= MAX_CRAWLED_PAGES;)
 			{
-				if(crawler.crawl() >= 0)
+				int state = crawler.crawl();
+				if(state > 0)
 					System.out.print("Website " + (i++) + ": ");
-				else
+				else if(state < 0)
 					break;
 			}
 			System.out.println("Max Reached");
