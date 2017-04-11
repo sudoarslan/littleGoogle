@@ -25,15 +25,35 @@ public class Index
 		return Integer.toString(value);
 	}
 
+	public String Str(double value)
+	{
+		return Double.toString(value);
+	}
+
+	public double Doub(String value)
+	{
+		return Double.parseDouble(value);
+	}
+
 	public int Int(String value)
 	{
 		return Integer.parseInt(value);
 	}
 
-	// Appends entry: Create or append
 	public void appendEntry(int ikey, int iid, int ivalue) throws IOException
 	{
-		String key = Str(ikey), id = Str(iid), value = Str(ivalue);
+		appendEntry(ikey, iid, Str(ivalue));
+	}
+
+	public void appendEntry(int ikey, int iid, double dvalue) throws IOException
+	{
+		appendEntry(ikey, iid, Str(dvalue));
+	}
+
+	// Appends entry: Create or append
+	public void appendEntry(int ikey, int iid, String value) throws IOException
+	{
+		String key = Str(ikey), id = Str(iid);
 		// Get the key
 		String content = (String)Hashtable.get(key);
 		// Create a new entry if not found; Append to the entry if found
@@ -45,10 +65,20 @@ public class Index
 		Hashtable.put(key, content);
 	}
 
-	// Updates entry: 
 	public void updateEntry(int ikey, int iid, int ivalue) throws IOException
 	{
-		String key = Str(ikey), id = Str(iid), value = Str(ivalue);
+		updateEntry(ikey, iid, Str(ivalue));
+	}
+
+	public void updateEntry(int ikey, int iid, double dvalue) throws IOException
+	{
+		updateEntry(ikey, iid, Str(dvalue));
+	}
+
+	// Updates entry: 
+	public void updateEntry(int ikey, int iid, String value) throws IOException
+	{
+		String key = Str(ikey), id = Str(iid);
 		// Search query for document id(int x)
 		String column = Identifier + id;
 		// Get the key
@@ -56,7 +86,7 @@ public class Index
 		// Append to the entry if not found
 		if(content == null)
 		{
-			appendEntry(ikey, iid, ivalue);
+			appendEntry(ikey, iid, value);
 			return;
 		}
 
@@ -73,7 +103,7 @@ public class Index
 		}
 		if(index == entry.length)
 		{
-			appendEntry(ikey, iid, ivalue);
+			appendEntry(ikey, iid, value);
 			return;
 		}
 
@@ -97,13 +127,13 @@ public class Index
 	}
 
 	// Retrieve all entries
-	public Vector<Pair> getAllEntries(int ikey) throws IOException
+	public Vector<Pair> getAllEntriesId(int ikey) throws IOException
 	{
 		String key = Str(ikey);
 		String value = (String)Hashtable.get(key);
 
 		if(value == null)
-			return new Vector<Pair>();
+			return null;
 
 		Vector<Pair> freq = new Vector<Pair>();
 
@@ -112,6 +142,22 @@ public class Index
 			freq.add(new Pair(Int(list[i].replaceAll(Identifier, "")), Int(list[i + 1])));
 
 		return freq;
+	}
+
+	public Vector<FPair> getAllEntriesVSM(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<FPair> weight = new Vector<FPair>();
+		String[] list = value.split("\\s+");
+		for(int i = 0; i < list.length; i += 2)
+			weight.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1]))); 
+
+		return weight;
 	}
 
 	// Removes entire row

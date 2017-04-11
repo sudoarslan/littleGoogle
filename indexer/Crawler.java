@@ -11,6 +11,7 @@ import org.htmlparser.beans.LinkBean;
 import java.util.*;
 import java.net.URL;
 import java.io.*;
+import java.lang.Math;
 
 public class Crawler
 {
@@ -37,6 +38,13 @@ public class Crawler
 		stopStem = new StopStem();
 	}
 
+	public double idf(int word_id) throws Exception
+	{
+		int N = database.urlMapTable.getMaxId();
+		int df = database.invertedIndex.getAllEntriesId(word_id).size();
+		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
+	}
+
 	public boolean isEmpty()
 	{
 		return url.size() == 0;
@@ -59,6 +67,24 @@ public class Crawler
 
 	public void Finalize() throws Exception
 	{
+		//Stores weights(tf * idf) vector for each document
+		int max_doc = database.urlMapTable.getMaxId();
+		for(int i = 0; i < max_doc; i++)
+		{
+			database.vsmIndex.removeRow(i);
+			//For each document, append all tf*idf to index
+			Vector<Pair> doc = database.forwardIndex.getAllEntriesId(i);
+			if(doc == null)
+				continue;
+
+			for(int j = 0; j < doc.size(); j++)
+			{
+				Pair word = doc.get(j);
+				//length of entries per word = df of the word
+				database.vsmIndex.appendEntry(j, word.Key, word.Value * idf(word.Key));
+			}
+		}
+
 		database.Finalize();
 	}
 
@@ -117,7 +143,6 @@ public class Crawler
 		}
 	}
 
-	//
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
 		// Insert the url into urlMapTable and get the url ID
@@ -186,12 +211,11 @@ public class Crawler
 			System.out.println("Initializing..");
 			Crawler crawler = new Crawler();
 
-			for(int i = 0; i < MAX_CRAWLED_PAGES;)
-			{
-				System.out.print("Website " + i + ": ");
+			System.out.print("Base URL: ");
+			for(int i = 1; i <= MAX_CRAWLED_PAGES;)
 				if(crawler.crawl())
-					i++;
-			}
+					System.out.print("Website " + (i++) + ": ");
+			System.out.println("Max Reached");
 
 			// Save the database
 			crawler.Finalize();

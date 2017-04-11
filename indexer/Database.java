@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "word", "url"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "word", "url"};
 
 	private RecordManager recman;
 
@@ -16,6 +16,8 @@ public class Database
 	public Index 	invertedIndex;
 	public Index	forwardIndex;
 	public Index	linkIndex;
+	public Index	vsmIndex;
+
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
 
@@ -23,11 +25,13 @@ public class Database
 	{
 		recman = RecordManagerFactory.createRecordManager(DATABASE_NAME);
 
-		invertedIndex = new Index(LoadOrCreate(HASHTABLE_NAME[0]), "doc");
-		forwardIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "word");
-		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "link");
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[3]), LoadOrCreate("inverted_" + HASHTABLE_NAME[3]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[4]), LoadOrCreate("inverted_" + HASHTABLE_NAME[4]));
+		invertedIndex = new Index(LoadOrCreate(HASHTABLE_NAME[0]), "D");
+		forwardIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "W");
+		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "L");
+		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
+		
+		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[4]), LoadOrCreate("inverted_" + HASHTABLE_NAME[4]));
+		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
 	}
 
 	// Load the database given the target table name, or create a new one when first try
@@ -57,7 +61,13 @@ public class Database
 	{
 		recman.commit();
 		recman.close();
-		System.out.println("Finalized");
+		System.out.println("Closed");
+	}
+
+	public void Save() throws IOException
+	{
+		recman.commit();
+		System.out.println("Saved");
 	}
 
 	public static void main(String[] args)
@@ -67,9 +77,9 @@ public class Database
 			Database db = new Database();
 
 			// Read in the prompt input from user
-			String hashtable_name 	= args[0];
+			String hashtable_name = args[0];
 			// Reverse the display order when the second input is "backward"
-			boolean order 			= args.length > 1? !args[1].equals("backward"): true;
+			boolean order = args.length > 1? !args[1].equals("backward"): true;
 
 			// Print all the data in the Hash Table
 			if(hashtable_name.equals("inverted"))
@@ -86,7 +96,13 @@ public class Database
 			{
 				System.out.println("Links");
 				db.linkIndex.printAll();
+			}	
+			else if(hashtable_name.equals("vsm"))
+			{
+				System.out.println("VSMs");
+				db.vsmIndex.printAll();
 			}
+
 			else if(hashtable_name.equals("word"))
 			{
 				System.out.println("Word");
@@ -96,7 +112,7 @@ public class Database
 			{
 				System.out.println("Urls");
 				db.urlMapTable.printAll(order);
-			}
+			}		
 		}
 		catch(Exception e)
 		{

@@ -1,6 +1,7 @@
 import java.util.*;
 import java.io.*;
 import java.lang.Math;
+import java.util.Scanner;
 
 public class Querier
 {
@@ -16,16 +17,16 @@ public class Querier
 	public double idf(int word_id) throws Exception
 	{
 		int N = database.urlMapTable.getMaxId();
-		int df = database.invertedIndex.getAllEntries(word_id).size();
+		int df = database.invertedIndex.getAllEntriesId(word_id).size();
 		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
 	}
 
-	public double CosSim(Vector<FPair> s1, Vector<FPair> s2)
+	public double CosSim(Vector<FPair> s1, Vector<FPair> s2) throws Exception
 	{
 		double score = 0;
 		for(int i = 0; i < s1.size(); i++)
 			for(int j = 0; j < s2.size(); j++)
-				if(s1.get(i).Key == s2.get(i).Key)
+				if(s1.get(i).Key == s2.get(j).Key)
 					score += s1.get(i).Value * s2.get(j).Value;
 
 		double dist_s1 = 0.0;
@@ -36,7 +37,10 @@ public class Querier
 		for(int j = 0; j < s2.size(); j++)
 			dist_s2 += Math.pow(s2.get(j).Value, 2);
 
-		System.out.println(score / dist_s1 / dist_s2);
+		dist_s1 = Math.sqrt(dist_s1);
+		dist_s2 = Math.sqrt(dist_s2);
+
+		System.out.println(score + "\t" + dist_s1 + "\t" + dist_s2);
 
 		return score / dist_s1 / dist_s2;
 	}
@@ -51,13 +55,17 @@ public class Querier
 		//filter stopwords and stem
 		Vector<String> p_query = stopStem.stopAndStem(s_query);
 
+		for(String s: p_query)
+			System.out.print(s + " ");
+		System.out.println("");
+
 		//convert words to word_ids, skip if not found in database
 		Vector<Integer> query_id = database.wordMapTable.valueToKey(p_query);
 
 		//create weight for query
 		HashSet<Integer> unique_id = new HashSet<Integer>(query_id);
 		for(int id : unique_id)
-			query_weight.add(new FPair(id, Collections.frequency(query_id, id) * idf(id)));
+			query_weight.add(new FPair(id, 1.0));//Collections.frequency(query_id, id) * idf(id)));
 
 		return query_weight;
 	}
@@ -65,16 +73,7 @@ public class Querier
 	public Vector<FPair> DocWeight(int doc_id) throws Exception
 	{
 		//Get all words of a document
-		Vector<Pair> doc = database.forwardIndex.getAllEntries(doc_id);
-		Vector<FPair> doc_weight = new Vector<FPair>();
-		for(int j = 0; j < doc.size(); j++)
-		{
-			Pair word = doc.get(j);
-			//length of entries per word = df of the word
-			doc_weight.add(new FPair(word.Key, word.Value * idf(word.Key)));
-		}
-
-		return doc_weight;
+		return database.vsmIndex.getAllEntriesVSM(doc_id);
 	}
 
 	public Vector<String> NaiveSearch(String query, Integer topK) throws Exception
@@ -82,16 +81,16 @@ public class Querier
 		//Converts query into VSM of weights
 		Vector<FPair> query_weight = QueryWeight(query);
 
-		//Converts each documents into VSM of weightsf
-		Vector<Vector<FPair>> doc_weight = new Vector<Vector<FPair>>();
-
 		int max_doc = database.urlMapTable.getMaxId();
-		for(int i = 0; i < max_doc; i++)
-			doc_weight.add(DocWeight(i));
 
 		Vector<FPair> score = new Vector<FPair>();
 		for(int i = 0; i < max_doc; i++)
-			score.add(new FPair(i, CosSim(query_weight, doc_weight.get(i))));
+		{
+			Vector<FPair> doc_weight = DocWeight(i);
+			if(doc_weight == null)
+				continue;
+			score.add(new FPair(i, CosSim(query_weight, doc_weight)));
+		}
 
 		Vector<FPair> list = FPair.TopK(score, topK);
 
@@ -119,8 +118,8 @@ public class Querier
 		for(int id : unique_id)
 		{
 			System.out.println(database.wordMapTable.getEntry(id) + ": ");
-			
-			Vector<Pair> entries = database.invertedIndex.getAllEntries(id);
+
+			Vector<Pair> entries = database.invertedIndex.getAllEntriesId(id);
 			for(Pair entry : entries)
 				System.out.println(database.urlMapTable.getEntry(entry.Key));
 
@@ -130,21 +129,26 @@ public class Querier
 
 	public static void main(String[] args)
 	{
-		if(args.length == 0)
-			return;
-
 		try
 		{
 			Querier querier = new Querier();
+			Scanner scanner = new Scanner(System.in);
 
-			querier.WordInDoc(args[0]);
-			
-			//for(String s : querier.NaiveSearch(args[0], 10))
-				//System.out.println(s);
+			while(true)
+			{
+				System.out.print("Search for: ");
+				String query = scanner.nextLine();
+				
+				if(query.equals("quit"))
+					break;
+
+				for(String s : querier.NaiveSearch(query, 10))
+					System.out.println(s);
+			}
 		}
 		catch (Exception e)
 		{
-			System.err.println("Error");
+			System.err.println("Error1");
 			System.err.println(e.toString());
 		}
 	}
