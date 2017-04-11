@@ -20,7 +20,7 @@ public class Crawler
 	private Vector<String> history;
 
 	// Crawl for num_pages pages, default is 30
-	private static final int MAX_CRAWLED_PAGES = 300;
+	private static final int MAX_CRAWLED_PAGES = 1000;
 	// Set the crawling target domain
 	private static final String TARGET_CRAWLED_DOMAIN = "https://course.cse.ust.hk/comp4321/labs/TestPages/testpage.htm";
 
@@ -181,15 +181,15 @@ public class Crawler
 		return link;
 	}
 
-	public boolean crawl() throws Exception
+	public int crawl() throws Exception
 	{
 		if(url.isEmpty())
-			throw new Exception("No more links");
+			return -1;
 
 		// Pops first element, i.e. BFS
 		String link = getURL();
 		if(crawled(link))
-			return false;
+			return 0;
 
 		System.out.println(link);
 
@@ -200,21 +200,25 @@ public class Crawler
 
 		setHistory(link);
 
-		return true;
+		return 1;
 	}
 
 	public static void main (String[] args)
 	{
 		try
 		{
+			Crawler crawler = new Crawler();
 			// Initialization
 			System.out.println("Initializing..");
-			Crawler crawler = new Crawler();
 
 			System.out.print("Base URL: ");
 			for(int i = 1; i <= MAX_CRAWLED_PAGES;)
-				if(crawler.crawl())
+			{
+				if(crawler.crawl() >= 0)
 					System.out.print("Website " + (i++) + ": ");
+				else
+					break;
+			}
 			System.out.println("Max Reached");
 
 			// Save the database
