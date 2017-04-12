@@ -104,7 +104,7 @@ public class Querier
 		Vector<FPair> query_weight = new Vector<FPair>();
 
 		//split and filter query string to vector space
-		String[] s_query = query.replaceAll("\".*\"", "").replaceAll("[^\\w\\s]|_", "").trim().toLowerCase().split(" ");
+		String[] s_query = query.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase().split(" ");
 
 		//filter stopwords and stem for normal and qouted queries
 		Vector<String> p_query = stopStem.stopAndStem(s_query);

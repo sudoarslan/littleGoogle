@@ -77,11 +77,16 @@ public class Crawler
 			if(doc == null)
 				continue;
 
+			int max_tf = 0;
+			for(int j = 0; j < doc.size(); j++)
+				if(doc.get(j).Value > max_tf)
+					max_tf = doc.get(j).Value;
+
 			for(int j = 0; j < doc.size(); j++)
 			{
 				Pair word = doc.get(j);
 				//length of entries per word = df of the word
-				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key));
+				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key) / max_tf);
 			}
 		}
 
