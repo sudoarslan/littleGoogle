@@ -4,12 +4,18 @@ import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.AndFilter;
 import org.htmlparser.filters.NodeClassFilter;
+import org.htmlparser.filters.HasAttributeFilter; // meta
+import org.htmlparser.filters.TagNameFilter; // meta
 import org.htmlparser.tags.LinkTag;
+import org.htmlparser.tags.MetaTag; // meta
+import org.htmlparser.tags.TitleTag; // meta
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.htmlparser.beans.LinkBean;
+//import org.htmlparser.http.ConnectionManager; // meta
 import java.util.*;
 import java.net.URL;
+import java.net.URLConnection; // meta
 import java.io.*;
 import java.lang.Math;
 
@@ -120,6 +126,68 @@ public class Crawler
 		return stemmed;
 	}
 
+	// TODO: Extract Meta data given a link
+	//Extract words from the first url in the vector
+	public Vector<String> extractMetas(String parent) throws Exception
+	{
+		Parser parser = new Parser();
+		//<meta name="description" content="Some texte about the site." />
+		//HasAttributeFilter filter = new HasAttributeFilter("name", "description");
+		TagNameFilter filter = new TagNameFilter("title");
+		Vector<String> metas = new Vector<String>();
+
+
+		try {
+            parser.setResource(parent);
+            NodeList list = parser.parse(filter);
+            Node node = list.elementAt(0);
+            
+            if (node instanceof TitleTag) {
+            	TitleTag titleTag = (TitleTag) node;
+            	String title = titleTag.getTitle();
+            	//System.out.println(title);
+            	metas.add(title);
+            }
+        } catch (ParserException e) {
+            e.printStackTrace();
+        }
+
+        // Get last modification date
+		URL url = new URL(parent);
+		URLConnection connection = url.openConnection();
+
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		//System.out.println("last modification date: " + last_modified_date);
+		metas.add(last_modified_date);
+
+		String document_size = connection.getHeaderField("content-Length");
+		//System.out.println("document size: " + document_size);
+		metas.add(document_size);
+
+		System.out.println(metas);
+        //ConnectionManager manager = new ConnectionManager();
+        //String last_modified_date = manager.getRequestProperties()["Last-Modified"];
+        //System.out.println(last_modified_date);
+        //metas.add(last_modified_date);
+
+
+        /*
+        if (node instanceof MetaTag) {
+            MetaTag meta = (MetaTag) node;
+            String description = meta.getAttribute("content");
+
+            System.out.println(description);
+
+            // Add the description to result
+            metas.add(description);
+            // Prints: "YouTube is a place to discover, watch, upload and share videos."
+        }
+        */
+
+
+        return metas;
+	}
+
 	//Find the occurence of each word in the string vector, save the frequency to the database
 	public void updateWordIndex(String url, Vector<String> words) throws Exception
 	{
@@ -171,6 +239,27 @@ public class Crawler
 		}
 	}
 
+	// TODO: updateMetaIndex(link, extractMetas(link))
+	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
+	{
+		// Insert the url into urlMapTable and get the url ID
+		int url_id = database.urlMapTable.appendEntry(url);
+
+		// Remove the out-dated url's child links data
+		database.linkIndex.removeRow(url_id);
+
+		// Update Meta data
+		// TODO: !!!
+		int index = 0;
+		for(String meta: metas)
+		{
+			//int link_id = database.urlMapTable.appendEntry(link);
+			// Insert the child links into the Link Index: [url ID, link index, child link id]
+			database.linkIndex.appendEntry(url_id, index++, meta);
+		}
+	}
+	
+
 	//Extract all links in the website
 	public Vector<String> extractLinks(String parent) throws Exception
 	{
@@ -207,6 +296,9 @@ public class Crawler
 		updateLinkIndex(link, extractLinks(link));
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
+
+		// TODO: update meta data for each page
+		updateMetaIndex(link, extractMetas(link));
 
 		setHistory(link);
 
