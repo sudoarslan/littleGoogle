@@ -24,6 +24,21 @@ public class Querier
 		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
 	}
 
+	/*
+	public Vector<FPair> vecStringToVecFPair(Vector<String> vec_of_string) throws Exception
+	{
+		if(vec_of_string == null)
+			return null;
+
+		Vector<FPair> result = new Vector<FPair>();
+		//String[] list = value.split("\\s+");
+		for(int i = 0; i < vec_of_string.length; i += 2)
+			result.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1]))); 
+
+		return result;
+	}
+	*/
+
 	public boolean HasSequence(Vector<FPair> query, Vector<FPair> words) throws Exception
 	{
 		int index = 0;
@@ -142,7 +157,7 @@ public class Querier
 		for(String[] q : quote)
 			q_query.add(stopStem.stopAndStem(q));
 
-		System.out.print("Quoted  query: ");
+		System.out.print("Quoted query: ");
 		for(Vector<String> q : q_query)
 		{
 			for(String s : q)
@@ -175,7 +190,16 @@ public class Querier
 		return database.vsmIndex.getAllEntriesVSM(doc_id);
 	}
 
-	public Vector<String> NaiveSearch(String query, Integer topK) throws Exception
+	// TODO: get the title of a document
+	/*
+	public Vector<FPair> TitleWeight(int doc_id) throws Exception
+	{
+		//Get title of a document
+		return database.metaIndex.getAllEntriesMeta(doc_id)[0];
+	}
+	*/
+
+	public Vector<Vector<String>> NaiveSearch(String query, Integer topK) throws Exception
 	{
 		//Converts query into VSM of weights
 		Vector<FPair> n_query_weight = QueryWeight(query);
@@ -198,23 +222,43 @@ public class Querier
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, doc_weight);
 			
+			//System.out.println(String.valueOf() + String.valueOf(score));
+
 			// TODO: create the other required set-up
 			/*
+			Vector<FPair> title_weight = TitleWeight(i);
+
 			score += CosSim(n_query_weight, title_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, title_weight);
-				*/
+			*/
 
 			scores.add(new FPair(i, score));
 		}
 
+
+
 		Vector<FPair> list = FPair.TopK(scores, topK);
 
-		Vector<String> links = new Vector<String>();
-		for(FPair p : list)
-			links.add(database.urlMapTable.getEntry(p.Key));
+		//Vector<PageInfo> results = new Vector<PageInfo>();
 
-		return links;
+		Vector<Vector<String>> results = new Vector<Vector<String>>();
+		Vector<String> links = new Vector<String>();
+		//PageInfo result = new PageInfo();
+
+		for(FPair p : list){
+			//result.Title = database.metaIndex.getAllEntriesMeta(p.Key)[0];
+			// Add meta data to search result
+			results.add(database.metaIndex.getAllEntriesMeta(p.Key));
+			// Add child links to search result
+			//results.add(database.linkIndex.getAllEntriesChildLink(p.Key));
+			//results.add(result);
+		}
+			
+			//links.add(database.urlMapTable.getEntry(p.Key));
+
+		return results;
+		//return links;
 	}
 
 	//Prints all websites containing any of the query words
@@ -264,9 +308,14 @@ public class Querier
 
 				if(query.equals("quit"))
 					break;
-
+				/*
 				for(String s : querier.NaiveSearch(query, top_k))
 					System.out.println(s);
+					*/
+				for(Vector<String> vec_str : querier.NaiveSearch(query, top_k)){
+					System.out.println(vec_str);
+				}
+
 			}
 		}
 		catch (Exception e)
