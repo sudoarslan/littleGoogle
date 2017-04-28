@@ -8,6 +8,7 @@ public class Querier
 {
 	private Database database;
 	private StopStem stopStem;
+	private History history;
 
 	private static final int TOP_K_RESULTS = 50;
 
@@ -15,6 +16,7 @@ public class Querier
 	{
 		database = new Database();
 		stopStem = new StopStem();
+		history = new History();
 	}
 
 	public double idf(int word_id) throws Exception
@@ -79,7 +81,7 @@ public class Querier
 	{
 		if(s1.size() == 0.0 || s2.size() == 0.0)
 			return 0.0;
-	
+
 		double score = 0;
 		if(HasSequence(s1, s2))
 			for(int i = 0; i < s1.size(); i++)
@@ -154,7 +156,7 @@ public class Querier
 		//Convert list of strings to list of word_id for each quote
 		Vector<Vector<Integer>> query_id = new Vector<Vector<Integer>>();
 		for(Vector<String> q : q_query)
-			query_id.add(database.wordMapTable.valueToKey(q));	
+			query_id.add(database.wordMapTable.valueToKey(q));
 
 		//create weight vector for each quote
 		for(Vector<Integer> id : query_id)
@@ -249,6 +251,7 @@ public class Querier
 		{
 			Querier querier = new Querier();
 			Scanner scanner = new Scanner(System.in);
+			History history = new History();
 
 			int top_k = TOP_K_RESULTS;
 
@@ -265,8 +268,12 @@ public class Querier
 				if(query.equals("quit"))
 					break;
 
+				history.addEntry(query);
 				for(String s : querier.NaiveSearch(query, top_k))
 					System.out.println(s);
+
+				System.out.println("\nSearch history: ");
+				history.printAll();
 			}
 		}
 		catch (Exception e)
