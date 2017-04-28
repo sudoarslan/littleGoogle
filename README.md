@@ -23,4 +23,6 @@ To compile and run the querier:
 ~~~
 cd indexer
 javac -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar *.java IRUtilities/*.java
-java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Querier <query phrase>
+java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Querier
+~~~
+Enter the ```<query phrase>``` to proceed searching.
