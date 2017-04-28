@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta"};
 
 	private RecordManager recman;
 
@@ -18,6 +18,7 @@ public class Database
 	public Index	linkIndex;
 	public Index	vsmIndex;
 	public Index	positionIndex;
+	public Index    metaIndex;
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
@@ -31,9 +32,10 @@ public class Database
 		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "L");
 		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
 		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
+		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[5]), "M");
 		
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
+		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
+		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[7]), LoadOrCreate("inverted_" + HASHTABLE_NAME[7]));
 	}
 
 	// Load the database given the target table name, or create a new one when first try
@@ -108,6 +110,11 @@ public class Database
 			{
 				System.out.println("Positions");
 				db.positionIndex.printAll();
+			}
+			else if(hashtable_name.equals("meta"))
+			{
+				System.out.println("Metas");
+				db.metaIndex.printAll();
 			}
 			else if(hashtable_name.equals("word"))
 			{
