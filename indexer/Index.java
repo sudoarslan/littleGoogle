@@ -40,6 +40,11 @@ public class Index
 		return Integer.parseInt(value);
 	}
 
+	public String underscoreToSpace(String text)
+	{
+		return text.replaceAll("_"," ");
+	}
+
 	public void appendEntry(int ikey, int iid, int ivalue) throws IOException
 	{
 		appendEntry(ikey, iid, Str(ivalue));
@@ -161,7 +166,7 @@ public class Index
 	}
 
 	// To be tested
-	/*
+	// Get the metas for one single document
 	public Vector<String> getAllEntriesMeta(int ikey) throws IOException
 	{
 		String key = Str(ikey);
@@ -170,12 +175,17 @@ public class Index
 		if(value == null)
 			return null;
 
-		Vector<String> meta = new Vector<String>();
+		Vector<String> metas = new Vector<String>();
 		String[] list = value.split("\\s+");
-		return new Vector<String>(list);
-		//return weight;
+		// Recover the underscore save handler
+		for(String meta : list)
+		{
+			metas.add(underscoreToSpace(meta));
+		}
+
+		return metas;
 	}
-	*/
+	
 
 	// Removes entire row
 	public void removeRow(int ikey) throws IOException

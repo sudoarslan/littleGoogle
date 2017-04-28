@@ -131,16 +131,12 @@ public class Crawler
 		return stemmed;
 	}
 
-	// TODO: Extract Meta data given a link
-	//Extract words from the first url in the vector
+	// Extract metadata from a URL
 	public Vector<String> extractMetas(String parent) throws Exception
 	{
 		Parser parser = new Parser();
-		//<meta name="description" content="Some texte about the site." />
-		//HasAttributeFilter filter = new HasAttributeFilter("name", "description");
 		TagNameFilter filter = new TagNameFilter("title");
 		Vector<String> metas = new Vector<String>();
-
 
 		try {
             parser.setResource(parent);
@@ -150,47 +146,26 @@ public class Crawler
             if (node instanceof TitleTag) {
             	TitleTag titleTag = (TitleTag) node;
             	String title = titleTag.getTitle();
-            	//System.out.println(title);
             	metas.add(title);
             }
         } catch (ParserException e) {
             e.printStackTrace();
         }
 
-        // Get last modification date
+        // Create URL connection to retrieve header information
 		URL url = new URL(parent);
 		URLConnection connection = url.openConnection();
 
+		// Get last modification date
 		String last_modified_date = connection.getHeaderField("Last-Modified");
-		//System.out.println("last modification date: " + last_modified_date);
 		metas.add(String.valueOf(last_modified_date));
 
+		// Get document size
 		String document_size = connection.getHeaderField("content-Length");
-		//System.out.println("document size: " + document_size);
 		metas.add(String.valueOf(document_size));
 
+		// Show meta for each URL
 		System.out.println(metas);
-
-
-        //ConnectionManager manager = new ConnectionManager();
-        //String last_modified_date = manager.getRequestProperties()["Last-Modified"];
-        //System.out.println(last_modified_date);
-        //metas.add(last_modified_date);
-
-
-        /*
-        if (node instanceof MetaTag) {
-            MetaTag meta = (MetaTag) node;
-            String description = meta.getAttribute("content");
-
-            System.out.println(description);
-
-            // Add the description to result
-            metas.add(description);
-            // Prints: "YouTube is a place to discover, watch, upload and share videos."
-        }
-        */
-
 
         return metas;
 	}
