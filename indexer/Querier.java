@@ -79,7 +79,7 @@ public class Querier
 	{
 		if(s1.size() == 0.0 || s2.size() == 0.0)
 			return 0.0;
-	
+
 		double score = 0;
 		if(HasSequence(s1, s2))
 			for(int i = 0; i < s1.size(); i++)
@@ -154,7 +154,7 @@ public class Querier
 		//Convert list of strings to list of word_id for each quote
 		Vector<Vector<Integer>> query_id = new Vector<Vector<Integer>>();
 		for(Vector<String> q : q_query)
-			query_id.add(database.wordMapTable.valueToKey(q));	
+			query_id.add(database.wordMapTable.valueToKey(q));
 
 		//create weight vector for each quote
 		for(Vector<Integer> id : query_id)
