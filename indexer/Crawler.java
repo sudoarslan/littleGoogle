@@ -158,13 +158,15 @@ public class Crawler
 
 		String last_modified_date = connection.getHeaderField("Last-Modified");
 		//System.out.println("last modification date: " + last_modified_date);
-		metas.add(last_modified_date);
+		metas.add(String.valueOf(last_modified_date));
 
 		String document_size = connection.getHeaderField("content-Length");
 		//System.out.println("document size: " + document_size);
-		metas.add(document_size);
+		metas.add(String.valueOf(document_size));
 
 		System.out.println(metas);
+
+
         //ConnectionManager manager = new ConnectionManager();
         //String last_modified_date = manager.getRequestProperties()["Last-Modified"];
         //System.out.println(last_modified_date);
@@ -242,11 +244,15 @@ public class Crawler
 	// TODO: updateMetaIndex(link, extractMetas(link))
 	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
 	{
-		// Insert the url into urlMapTable and get the url ID
-		int url_id = database.urlMapTable.appendEntry(url);
+		// Get the Document ID
+		int url_id = database.urlMapTable.getKey(url);
+		//System.out.println("The url_id is: " + String.valueOf(url_id));
+		if(url_id == -1)
+			throw new Exception("Link not found, cannot insert word to index");
 
 		// Remove the out-dated url's child links data
-		database.linkIndex.removeRow(url_id);
+		database.metaIndex.removeRow(url_id);
+
 
 		// Update Meta data
 		// TODO: !!!
@@ -255,8 +261,11 @@ public class Crawler
 		{
 			//int link_id = database.urlMapTable.appendEntry(link);
 			// Insert the child links into the Link Index: [url ID, link index, child link id]
-			database.linkIndex.appendEntry(url_id, index++, meta);
+			database.metaIndex.appendEntry(url_id, index++, meta);
+			//System.out.println("Insert sth: " + String.valueOf(url_id) + String.valueOf(index) + meta);
 		}
+
+		//System.out.println("Result: " + database.metaIndex.getEntry(,url_id));
 	}
 	
 

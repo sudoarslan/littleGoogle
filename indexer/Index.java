@@ -160,6 +160,23 @@ public class Index
 		return weight;
 	}
 
+	// To be tested
+	/*
+	public Vector<String> getAllEntriesMeta(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> meta = new Vector<String>();
+		String[] list = value.split("\\s+");
+		return new Vector<String>(list);
+		//return weight;
+	}
+	*/
+
 	// Removes entire row
 	public void removeRow(int ikey) throws IOException
 	{
@@ -171,7 +188,9 @@ public class Index
 	{
 		FastIterator iter = Hashtable.keys();
 		String key;
-		while( (key=(String)iter.next()) != null )
-			System.out.println(key + " = " + Hashtable.get(key));
+		System.out.println("KEY");
+		while( ( key = (String)iter.next() ) != null )
+			System.out.println(key + " = " + (String)Hashtable.get(key));
+		System.out.println("finish");
 	}
 }
