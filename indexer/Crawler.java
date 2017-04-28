@@ -71,6 +71,11 @@ public class Crawler
 		return history.indexOf(link) != -1;
 	}
 
+	public String spaceToUnderscore(String text)
+	{
+		return text.replaceAll("\\s+","_");
+	}
+
 	public void Finalize() throws Exception
 	{
 		//Stores weights(tf * idf) vector for each document
@@ -241,31 +246,26 @@ public class Crawler
 		}
 	}
 
-	// TODO: updateMetaIndex(link, extractMetas(link))
 	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
 	{
 		// Get the Document ID
 		int url_id = database.urlMapTable.getKey(url);
-		//System.out.println("The url_id is: " + String.valueOf(url_id));
 		if(url_id == -1)
 			throw new Exception("Link not found, cannot insert word to index");
 
-		// Remove the out-dated url's child links data
+		// Remove the out-dated url's meta data
 		database.metaIndex.removeRow(url_id);
 
-
 		// Update Meta data
-		// TODO: !!!
 		int index = 0;
 		for(String meta: metas)
 		{
-			//int link_id = database.urlMapTable.appendEntry(link);
-			// Insert the child links into the Link Index: [url ID, link index, child link id]
-			database.metaIndex.appendEntry(url_id, index++, meta);
-			//System.out.println("Insert sth: " + String.valueOf(url_id) + String.valueOf(index) + meta);
+			String underscored_meta = spaceToUnderscore(meta);
+			// Insert the metadata into the Link Index: [url ID, index, meta]
+			// meta = ["title", "last modified date", "size of page"]
+			database.metaIndex.appendEntry(url_id, index++, underscored_meta);
 		}
 
-		//System.out.println("Result: " + database.metaIndex.getEntry(,url_id));
 	}
 	
 
