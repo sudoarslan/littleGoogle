@@ -61,4 +61,12 @@ public class History
             System.out.println(key + " : " + history.get(key));
         }
 	}
+
+	// Save and confirm the changes of the database
+	public void Finalize() throws IOException
+	{
+		recman.commit();
+		recman.close();
+		System.out.println("Closed");
+	}
 }
