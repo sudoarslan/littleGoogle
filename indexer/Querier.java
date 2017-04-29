@@ -298,6 +298,7 @@ public class Querier
 			double score = CosSim(n_query_weight, doc_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, doc_weight);
+
 			
 			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
 
@@ -309,7 +310,7 @@ public class Querier
 			score += CosSim(n_query_weight, title_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, title_weight);
-			
+
 			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
 
 			scores.add(new FPair(i, score));
@@ -426,6 +427,7 @@ public class Querier
 				history.printAll();
 
 			}
+			history.Finalize();
 		}
 		catch (Exception e)
 		{

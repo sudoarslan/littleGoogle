@@ -20,6 +20,11 @@ public class MapTable
 			BackwardHashtable.put("max_id", 0);
 	}
 
+	public String Str(int value)
+	{
+		return Integer.toString(value);
+	}
+
 	public int getMaxId() throws IOException
 	{
 		return (Integer)BackwardHashtable.get("max_id");
@@ -64,7 +69,7 @@ public class MapTable
 		String value = (String)ForwardHashtable.get(key);
 		ForwardHashtable.remove(key);
 		BackwardHashtable.remove(value);
-	} 
+	}
 
 	// Removes row given value
 	public void removeRow(String value) throws IOException
@@ -100,6 +105,28 @@ public class MapTable
 		return values;
 	}
 
+	public Vector<String> getAllKeys(boolean forward) throws IOException {
+		Vector<String> allKeys = new Vector<String>();
+		if (forward)
+		{
+			FastIterator iter = ForwardHashtable.keys();
+			Integer key;
+			while( (key=(Integer)iter.next()) != null ){
+				allKeys.add(Str(key));
+			}
+		}
+		else
+		{
+			FastIterator iter = BackwardHashtable.keys();
+			Integer key;
+			while( (key=(Integer)iter.next()) != null ){
+				allKeys.add(Str(key));
+			}
+		}
+
+		return allKeys;
+	}
+
 	public void printAll(boolean forward) throws IOException
 	{
 		if(forward)
@@ -117,5 +144,5 @@ public class MapTable
 				System.out.println(value + " = " + BackwardHashtable.get(value));
 
 		}
-	}    
+	}
 }

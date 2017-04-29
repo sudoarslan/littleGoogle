@@ -80,7 +80,7 @@ public class Index
 		updateEntry(ikey, iid, Str(dvalue));
 	}
 
-	// Updates entry: 
+	// Updates entry:
 	public void updateEntry(int ikey, int iid, String value) throws IOException
 	{
 		String key = Str(ikey), id = Str(iid);
@@ -160,7 +160,7 @@ public class Index
 		Vector<FPair> weight = new Vector<FPair>();
 		String[] list = value.split("\\s+");
 		for(int i = 0; i < list.length; i += 2)
-			weight.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1]))); 
+			weight.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1])));
 
 		return weight;
 	}
@@ -184,6 +184,7 @@ public class Index
 		return metas;
 	}
 
+
 	public Vector<String> getAllEntriesChildLink(int ikey) throws IOException
 	{
 		String key = Str(ikey);
@@ -202,11 +203,40 @@ public class Index
 	}
 	
 
+	public Vector<String> getAllKeys() throws IOException {
+		Vector<String> allKeys = new Vector<String>();
+		FastIterator iter = Hashtable.keys();
+
+        String key;
+        while( (key = (String)iter.next())!=null)
+        {
+            allKeys.add(key);
+        }
+		return allKeys;
+	}
+
+
+
 	// Removes entire row
 	public void removeRow(int ikey) throws IOException
 	{
 		String key = Str(ikey);
 		Hashtable.remove(key);
+	}
+
+	public void removeAll() throws IOException
+	{
+		FastIterator iter = Hashtable.keys();
+		Vector<String> keys = new Vector<String>();
+		String key;
+		System.out.println("KEY");
+		while( ( key = (String)iter.next() ) != null ){
+			keys.add(key);
+		}
+		for(String deleteKey : keys){
+			removeRow(Int(deleteKey));
+		}
+		System.out.println("finish");
 	}
 
 	public void printAll() throws IOException

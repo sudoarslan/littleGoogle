@@ -11,4 +11,16 @@ public class Pair
 		Value = value;
 	}
 
+	public void printPair(){
+		System.out.printf("%d, %d  ", Key, Value);
+	}
+
+	public int getKey(){
+		return Key;
+	}
+
+	public int getValue(){
+		return Value;
+	}
+
 }

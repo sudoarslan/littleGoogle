@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta", "parent"};
 
 	private RecordManager recman;
 
@@ -19,6 +19,7 @@ public class Database
 	public Index	vsmIndex;
 	public Index	positionIndex;
 	public Index    metaIndex;
+	public Index	parentIndex;
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
@@ -33,9 +34,11 @@ public class Database
 		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
 		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
 		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[7]), "M");
-		
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[7]));
+		parentIndex   = new Index(LoadOrCreate(HASHTABLE_NAME[8]), "A");
+
+		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
+		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
+
 	}
 
 	// Load the database given the target table name, or create a new one when first try
@@ -100,7 +103,7 @@ public class Database
 			{
 				System.out.println("Links");
 				db.linkIndex.printAll();
-			}	
+			}
 			else if(hashtable_name.equals("vsm"))
 			{
 				System.out.println("VSMs");
@@ -121,11 +124,15 @@ public class Database
 				System.out.println("Word");
 				db.wordMapTable.printAll(order);
 			}
+			else if(hashtable_name.equals("parent")){
+				System.out.println("Parents");
+				db.parentIndex.printAll();
+			}
 			else if(hashtable_name.equals("url"))
 			{
 				System.out.println("Urls");
 				db.urlMapTable.printAll(order);
-			}		
+			}
 		}
 		catch(Exception e)
 		{
