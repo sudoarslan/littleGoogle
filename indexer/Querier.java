@@ -247,7 +247,7 @@ public class Querier
 		//System.out.println(title);
 
 		String[] title_array = title.split(" ");
-		System.out.println(Arrays.toString(title_array));
+		//System.out.println(Arrays.toString(title_array));
 
 		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
 		//System.out.println(title_vec.toString());
