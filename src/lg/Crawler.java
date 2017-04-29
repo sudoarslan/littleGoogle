@@ -34,16 +34,6 @@ public class Crawler
 		stopStem = new StopStem();
 	}
 
-	public Crawler(BufferedReader br, RecordManager rc) throws Exception
-	{
-		url = new Vector<String>();
-		url.add(TARGET_CRAWLED_DOMAIN);
-		history = new Vector<String>();
-
-		database = new Database(rc);
-		stopStem = new StopStem(br);
-	}
-
 
 	public double idf(int word_id) throws Exception
 	{

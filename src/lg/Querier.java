@@ -20,12 +20,6 @@ public class Querier
 		stopStem = new StopStem();
 	}
 
-	public Querier(BufferedReader br, RecordManager rc) throws Exception
-	{
-		database = new Database(rc);
-		stopStem = new StopStem(br);
-	}
-
 	public double idf(int word_id) throws Exception
 	{
 		int N = database.urlMapTable.getMaxId();

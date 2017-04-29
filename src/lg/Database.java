@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Database
 {
 	// Database filename
-	private static final String DATABASE_NAME = "indexDB";
+	private static final String DATABASE_NAME = "indexDB1";
 	// Hashtable filenames
 	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url"};
 
@@ -27,20 +27,6 @@ public class Database
 	Database() throws IOException
 	{
 		recman = RecordManagerFactory.createRecordManager(DATABASE_NAME);
-
-		invertedIndex = new Index(LoadOrCreate(HASHTABLE_NAME[0]), "D");
-		forwardIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "W");
-		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "L");
-		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
-		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
-
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
-	}
-
-	Database(RecordManager rc) throws IOException
-	{
-		recman = rc;
 
 		invertedIndex = new Index(LoadOrCreate(HASHTABLE_NAME[0]), "D");
 		forwardIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "W");

@@ -4,25 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TitleExtractor {
-    /* the CASE_INSENSITIVE flag accounts for
-     * sites that use uppercase title tags.
-     * the DOTALL flag accounts for sites that have
-     * line feeds in the title text */
+public class TitleModifiedDate {
     private static final Pattern TITLE_TAG =
             Pattern.compile("\\<title>(.*)\\</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    /**
-     * @param url the HTML page
-     * @return title text (null if document isn't HTML or lacks a title tag)
-     * @throws IOException
-     */
     public static String getPageTitle(String url) throws IOException {
         URL u = new URL(url);
         URLConnection conn = u.openConnection();
@@ -63,13 +56,6 @@ public class TitleExtractor {
         }
     }
 
-    /**
-     * Loops through response headers until Content-Type is found.
-     *
-     * @param conn
-     * @return ContentType object representing the value of
-     * the Content-Type header
-     */
     private static ContentType getContentTypeHeader(URLConnection conn) {
         int i = 0;
         boolean moreHeaders = true;
@@ -93,10 +79,6 @@ public class TitleExtractor {
         else
             return null;
     }
-
-    /**
-     * Class holds the content type and charset (if present)
-     */
     private static final class ContentType {
         private static final Pattern CHARSET_HEADER = Pattern.compile("charset=([-_a-zA-Z0-9]+)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -115,6 +97,16 @@ public class TitleExtractor {
             } else
                 contentType = headerValue;
         }
+    }
+
+    public static String getLastModificationDate(String urlStr) throws Exception {
+        URL url = new URL(urlStr);
+        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+        long date = httpCon.getLastModified();
+        if (date == 0)
+            return "No last-modified information.";
+        else
+            return ("Last-Modified: " + new Date(date));
     }
 }
 

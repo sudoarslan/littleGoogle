@@ -1,5 +1,4 @@
 <%@ page import="java.util.Vector" %>
-<%@ page import="lg.TitleExtractor" %>
 <%@ page errorPage="showError.jsp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -42,8 +41,9 @@
     <c:forEach items="${queryResult}" var="url">
         <div class="uk-card uk-card-hover uk-card-body searchResult" align="left">
             <div class="uk-card-badge uk-label">See Similar</div>
-            <a href="${url}" style="text-decoration: none"><h6 class="uk-card-title" style="margin-bottom: 5px">${TitleExtractor.getPageTitle(url)}</h6></a>
+            <a href="${url}" style="text-decoration: none"><h6 class="uk-card-title" style="margin-bottom: 5px">${url}</h6></a>
             <a href="${url}"><p>${url}</p></a>
+            <p>${url}</p>
         </div>
     </c:forEach>
 </div>
