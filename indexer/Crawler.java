@@ -142,7 +142,7 @@ public class Crawler
             parser.setResource(parent);
             NodeList list = parser.parse(filter);
             Node node = list.elementAt(0);
-            
+
             if (node instanceof TitleTag) {
             	TitleTag titleTag = (TitleTag) node;
             	String title = titleTag.getTitle();
@@ -221,6 +221,29 @@ public class Crawler
 		}
 	}
 
+	public void updateParentIndex(String url, Vector<String> links) throws Exception{
+		// Get the url ID
+		int url_id = database.urlMapTable.getKey(url);
+		if(url_id == -1)
+			throw new Exception("Link not found, cannot insert word to index");
+
+		// Iterate through all the child links of the url
+		int index = 0;
+		for(String link: links)
+		{
+			System.out.println("parent URL:"+url+", coressponding ID:"+url_id);
+			int link_id = database.urlMapTable.getKey(link);
+			System.out.println("child URL:"+link+", coressponding ID:"+link_id);
+			// Insert the parent links into the Link Index: [link ID, link index, parent link id]
+			database.parentIndex.appendEntry(link_id, index++, url_id);
+			System.out.println("append:"+link_id+", "+url_id);
+		}
+	}
+
+	public void removeAllParent() throws Exception{
+		database.parentIndex.removeAll();
+	}
+
 	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
 	{
 		// Get the Document ID
@@ -242,7 +265,6 @@ public class Crawler
 		}
 
 	}
-	
 
 	//Extract all links in the website
 	public Vector<String> extractLinks(String parent) throws Exception
@@ -276,8 +298,10 @@ public class Crawler
 
 		System.out.println(link);
 
-		// Extract links: create Link Index
-		updateLinkIndex(link, extractLinks(link));
+		Vector<String> extractedLinks = extractLinks(link);
+		// Extract links: create Link Index and parentIndex
+		updateLinkIndex(link, extractedLinks);
+		updateParentIndex(link, extractedLinks);
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
 
@@ -294,6 +318,8 @@ public class Crawler
 		try
 		{
 			Crawler crawler = new Crawler();
+			// clear all data in parentIndex
+			crawler.removeAllParent();
 			// Initialization
 			System.out.println("Initializing..");
 

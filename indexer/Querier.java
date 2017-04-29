@@ -199,7 +199,7 @@ public class Querier
 			double score = CosSim(n_query_weight, doc_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, doc_weight);
-			
+
 			// TODO: create the other required set-up
 			/*
 			score += CosSim(n_query_weight, title_weight);
@@ -275,6 +275,7 @@ public class Querier
 				System.out.println("\nSearch history: ");
 				history.printAll();
 			}
+			history.Finalize();
 		}
 		catch (Exception e)
 		{
