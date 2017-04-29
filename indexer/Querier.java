@@ -34,7 +34,16 @@ public class Querier
 		System.out.println(label + ": " + String.valueOf(num));
 	}
 
-	public static <T> void printlnWithLabel(String label, Vector<T> vec) throws Exception
+	public static void printlnWithLabelWPair(String label, Vector<WPair> vec) throws Exception
+	{
+		System.out.print(label + ": ");
+		for (WPair wp : vec){
+			System.out.print(wp.Key + "(" + String.valueOf(wp.Value) + ") ");
+		}
+		System.out.println();
+	}
+
+	public static void printlnWithLabel(String label, Vector<String> vec) throws Exception
 	{
 		System.out.println(label + ": " + vec.toString());
 	}
@@ -252,33 +261,33 @@ public class Querier
 		}
 
 
-
+		// All search results in FPAir format
 		Vector<FPair> list = FPair.TopK(scores, topK);
 
-
-
+		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
-		//Vector<Vector<String>> results = new Vector<Vector<String>>();
 
-		
-		//Vector<String> links = new Vector<String>();
-		
 
 		for(FPair p : list){
+			// Single search result
 			PageInfo result = new PageInfo();
+			// Get metadata
 			Vector<String> resultMeta = database.metaIndex.getAllEntriesMeta(p.Key);
-
+			// Get keyword pairs
+			Vector<Pair> resultKeywordFreq = database.forwardIndex.getAllEntriesId(p.Key);
+			for(int j = 0; j < 5; j++){
+				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
+					resultKeywordFreq.get(j).Value);
+				result.KeywordVector.add(keywordPair);
+			}
+			// Get title, url, date and size
 			result.Title = resultMeta.get(0);
 			result.Url = database.urlMapTable.getEntry(p.Key);
 			result.LastModifiedDate = resultMeta.get(1);
 			result.SizeOfPage = Integer.parseInt(resultMeta.get(2));
 
-
+			// Get child links
 			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
-			// Add meta data to search result
-			//results.add(database.metaIndex.getAllEntriesMeta(p.Key));
-			// Add child links to search result
-			//results.add(database.linkIndex.getAllEntriesChildLink(p.Key));
 
 			results.add(result);
 		}
@@ -345,6 +354,7 @@ public class Querier
 					printlnWithLabel("Url", doc.Url);
 					printlnWithLabel("Last Modified Date", doc.LastModifiedDate);
 					printlnWithLabel("Size of Page", doc.SizeOfPage);
+					printlnWithLabelWPair("Keywords", doc.KeywordVector);
 					printlnWithLabel("Child Links", doc.ChildLinkVector);
 					System.out.println("---------------------");
 				}

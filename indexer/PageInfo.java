@@ -6,7 +6,7 @@ public class PageInfo
 	public String Url;
 	public String LastModifiedDate;
 	public int SizeOfPage;
-	public Vector<String> KeywordVector;
+	public Vector<WPair> KeywordVector;
 	public Vector<String> ParentLinkVector;
 	public Vector<String> ChildLinkVector;
 
@@ -17,12 +17,12 @@ public class PageInfo
 		Url = "";
 		LastModifiedDate = "";
 		SizeOfPage = 0;
-		KeywordVector = null;
+		KeywordVector = new Vector<WPair>();
 		ParentLinkVector = null;
 		ChildLinkVector = null;
 	}
 
-	PageInfo(String title, String url, String lastModifiedDate, int sizeOfPage, Vector<String> keywordVector, 
+	PageInfo(String title, String url, String lastModifiedDate, int sizeOfPage, Vector<WPair> keywordVector, 
 		Vector<String> parentLinkVector, Vector<String> childLinkVector)
 	{
 		Title = title;
