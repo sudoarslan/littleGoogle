@@ -32,10 +32,10 @@ public class Database
 		linkIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "L");
 		vsmIndex      = new Index(LoadOrCreate(HASHTABLE_NAME[3]), "W");
 		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
-		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[5]), "M");
+		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[7]), "M");
 		
-		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
-		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[7]), LoadOrCreate("inverted_" + HASHTABLE_NAME[7]));
+		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
+		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[7]));
 	}
 
 	// Load the database given the target table name, or create a new one when first try

@@ -49,6 +49,19 @@ public class Querier
 			System.out.println(label + ": " + "none");
 	}
 
+	public static void printlnWithLabelFPair(String label, Vector<FPair> vec) throws Exception
+	{
+		if(vec != null){
+			System.out.print(label + ": ");
+			for (FPair fp : vec){
+				System.out.print(String.valueOf(fp.Key) + "(" + String.valueOf(fp.Value) + ") ");
+			}
+			System.out.println();
+		}
+		else
+			System.out.println(label + ": " + "none");
+	}
+
 	public static void printlnWithLabel(String label, Vector<String> vec) throws Exception
 	{
 		if(vec != null)
@@ -69,21 +82,6 @@ public class Querier
 	        }           
 	    });
 	}
-
-	/*
-	public Vector<FPair> vecStringToVecFPair(Vector<String> vec_of_string) throws Exception
-	{
-		if(vec_of_string == null)
-			return null;
-
-		Vector<FPair> result = new Vector<FPair>();
-		//String[] list = value.split("\\s+");
-		for(int i = 0; i < vec_of_string.length; i += 2)
-			result.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1]))); 
-
-		return result;
-	}
-	*/
 
 	public boolean HasSequence(Vector<FPair> query, Vector<FPair> words) throws Exception
 	{
@@ -121,6 +119,8 @@ public class Querier
 			for(int j = 0; j < s2.size(); j++)
 				if(s1.get(i).Key == s2.get(j).Key)
 					score += s1.get(i).Value * s2.get(j).Value;
+
+		//System.out.println(score);
 
 		double dist_s1 = 0.0;
 		for(int i = 0; i < s1.size(); i++)
@@ -230,6 +230,7 @@ public class Querier
 		return query_weight;
 	}
 
+	// The tfidf of the document
 	public Vector<FPair> DocWeight(int doc_id) throws Exception
 	{
 		//Get all words of a document
@@ -237,17 +238,47 @@ public class Querier
 	}
 
 	// TODO: get the title of a document
-	/*
+	// The title's tf of the document
 	public Vector<FPair> TitleWeight(int doc_id) throws Exception
 	{
+		Vector<FPair> results = new Vector<FPair>();
 		//Get title of a document
-		return database.metaIndex.getAllEntriesMeta(doc_id)[0];
+		String title = database.metaIndex.getAllEntriesMeta(doc_id).get(0);
+		System.out.println(title);
+
+		String[] title_array = title.split(" ");
+		System.out.println(Arrays.toString(title_array));
+
+		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
+		System.out.println(title_vec.toString());
+
+		// Extract title's words
+		HashSet<String> unique = new HashSet<String>(title_vec);
+		Iterator iterator = unique.iterator(); 
+		while (iterator.hasNext()){
+	   		System.out.println("Value: "+iterator.next() + " ");  
+	   	}
+
+		// Iterate through all the unique word
+		for(String word: unique)
+		{
+			// Get the term frequency(tf) of the word
+			int freq = Collections.frequency(title_vec, word);
+			int word_id = database.wordMapTable.getKey(word);
+
+			FPair result = new FPair(word_id, freq);
+
+			results.add(result);
+		}
+
+		return results;
 	}
-	*/
+
 
 	public Vector<PageInfo> NaiveSearch(String query, Integer topK) throws Exception
 	{
 		//Converts query into VSM of weights
+		// "normal unquoted" & "quoted"
 		Vector<FPair> n_query_weight = QueryWeight(query);
 		Vector<Vector<FPair>> q_query_weight = QuoteWeight(query);
 
@@ -268,16 +299,18 @@ public class Querier
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, doc_weight);
 			
-			//System.out.println(String.valueOf() + String.valueOf(score));
+			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
 
-			// TODO: create the other required set-up
-			/*
+			// TODO: favor title
 			Vector<FPair> title_weight = TitleWeight(i);
+			printlnWithLabelFPair("title_weight", title_weight);
+			//System.out.println(title_weight);
 
 			score += CosSim(n_query_weight, title_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, title_weight);
-			*/
+			
+			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
 
 			scores.add(new FPair(i, score));
 		}
@@ -314,12 +347,14 @@ public class Querier
 			// Get child links
 			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
 
+			// TODO: Get parent links
+
 			results.add(result);
 		}
 			
-			//links.add(database.urlMapTable.getEntry(p.Key));
+			
 
-		System.out.println("\nSearch Result:");
+		System.out.println("\nSearch Result:\n");
 		return results;
 		//return links;
 	}
@@ -382,7 +417,7 @@ public class Querier
 					printlnWithLabel("Size of Page", doc.SizeOfPage);
 					printlnWithLabelWPair("Keywords", doc.KeywordVector);
 					printlnWithLabel("Child Links", doc.ChildLinkVector);
-					System.out.println("---------------------");
+					System.out.println("---------------------------------------------------------------");
 				}
 
 				// Add to query history
