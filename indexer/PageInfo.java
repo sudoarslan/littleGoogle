@@ -5,12 +5,24 @@ public class PageInfo
 	public String Title;
 	public String Url;
 	public String LastModifiedDate;
-	public Int SizeOfPage;
+	public int SizeOfPage;
 	public Vector<String> KeywordVector;
 	public Vector<String> ParentLinkVector;
 	public Vector<String> ChildLinkVector;
 
-	PageInfo(String title, String url, String lastModifiedDate, Int sizeOfPage, Vector<String> keywordVector, 
+	// Empty Constructor
+	PageInfo()
+	{
+		Title = "";
+		Url = "";
+		LastModifiedDate = "";
+		SizeOfPage = 0;
+		KeywordVector = null;
+		ParentLinkVector = null;
+		ChildLinkVector = null;
+	}
+
+	PageInfo(String title, String url, String lastModifiedDate, int sizeOfPage, Vector<String> keywordVector, 
 		Vector<String> parentLinkVector, Vector<String> childLinkVector)
 	{
 		Title = title;

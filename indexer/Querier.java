@@ -199,7 +199,7 @@ public class Querier
 	}
 	*/
 
-	public Vector<Vector<String>> NaiveSearch(String query, Integer topK) throws Exception
+	public Vector<PageInfo> NaiveSearch(String query, Integer topK) throws Exception
 	{
 		//Converts query into VSM of weights
 		Vector<FPair> n_query_weight = QueryWeight(query);
@@ -240,19 +240,25 @@ public class Querier
 
 		Vector<FPair> list = FPair.TopK(scores, topK);
 
-		//Vector<PageInfo> results = new Vector<PageInfo>();
 
-		Vector<Vector<String>> results = new Vector<Vector<String>>();
-		Vector<String> links = new Vector<String>();
-		//PageInfo result = new PageInfo();
+
+		Vector<PageInfo> results = new Vector<PageInfo>();
+		//Vector<Vector<String>> results = new Vector<Vector<String>>();
+
+		
+		//Vector<String> links = new Vector<String>();
+		
 
 		for(FPair p : list){
-			//result.Title = database.metaIndex.getAllEntriesMeta(p.Key)[0];
+			PageInfo result = new PageInfo();
+			result.Title = database.metaIndex.getAllEntriesMeta(p.Key).get(0);
+
 			// Add meta data to search result
-			results.add(database.metaIndex.getAllEntriesMeta(p.Key));
+			//results.add(database.metaIndex.getAllEntriesMeta(p.Key));
 			// Add child links to search result
 			//results.add(database.linkIndex.getAllEntriesChildLink(p.Key));
-			//results.add(result);
+
+			results.add(result);
 		}
 			
 			//links.add(database.urlMapTable.getEntry(p.Key));
@@ -312,8 +318,8 @@ public class Querier
 				for(String s : querier.NaiveSearch(query, top_k))
 					System.out.println(s);
 					*/
-				for(Vector<String> vec_str : querier.NaiveSearch(query, top_k)){
-					System.out.println(vec_str);
+				for(PageInfo doc : querier.NaiveSearch(query, top_k)){
+					System.out.println(doc.Title);
 				}
 
 			}
