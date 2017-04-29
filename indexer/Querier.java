@@ -294,18 +294,22 @@ public class Querier
 			if(doc_weight == null)
 				continue;
 
+
+
+
 			//Summation of normal query score and quoted query score
 			double score = CosSim(n_query_weight, doc_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
 				score += QCosSim(query_weight, doc_weight);
 
-			
 			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
+
+
+
 
 			// TODO: favor title
 			Vector<FPair> title_weight = TitleWeight(i);
 			printlnWithLabelFPair("title_weight", title_weight);
-			//System.out.println(title_weight);
 
 			score += CosSim(n_query_weight, title_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
@@ -313,14 +317,22 @@ public class Querier
 
 			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
 
+
+
+
+
 			scores.add(new FPair(i, score));
 		}
+
+		System.out.println("Finish iteration");
 
 
 		// All search results in FPAir format
 		Vector<FPair> list = FPair.TopK(scores, topK);
+		System.out.println("1");
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
+		System.out.println("2");
 
 
 		for(FPair p : list){
@@ -334,11 +346,21 @@ public class Querier
 			// Sort the keywords by frequency, from largest to lowest(false)
 			sort(resultKeywordFreq, false);
 
-			for(int j = 0; j < 5; j++){
+			System.out.println("3");
+
+			int max_keyarray_length = (resultKeywordFreq.size() > 5)? 5 : resultKeywordFreq.size();
+
+			for(int j = 0; j < max_keyarray_length; j++){
+				System.out.println("3-1");
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
 					resultKeywordFreq.get(j).Value);
+				System.out.println("3-2");
 				result.KeywordVector.add(keywordPair);
+				System.out.println("3-3");
 			}
+
+			System.out.println("4");
+
 			// Get title, url, date and size
 			result.Title = resultMeta.get(0);
 			result.Url = database.urlMapTable.getEntry(p.Key);
@@ -349,6 +371,8 @@ public class Querier
 			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
 
 			// TODO: Get parent links
+
+			System.out.println("5");
 
 			results.add(result);
 		}
