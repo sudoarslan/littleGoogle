@@ -12,8 +12,6 @@ public class History
 	private RecordManager recman;
 	public HTree history;
 
-	private static final int TOP_K_RESULTS = 50;
-
 	History() throws Exception
     {
 		recman = RecordManagerFactory.createRecordManager("queryDB");
@@ -39,10 +37,6 @@ public class History
 	}
 
 	public void addEntry(String value) throws IOException{
-		Integer id = (Integer)history.get(value);
-        // if there is already an item, do nothing
-		if(id != null);
-
 		// current time as ID
 		Date date = new Date();
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
