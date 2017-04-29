@@ -24,6 +24,21 @@ public class Querier
 		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
 	}
 
+	public static void printlnWithLabel(String label, String text) throws Exception
+	{
+		System.out.println(label + ": " + text);
+	}
+
+	public static void printlnWithLabel(String label, int num) throws Exception
+	{
+		System.out.println(label + ": " + String.valueOf(num));
+	}
+
+	public static <T> void printlnWithLabel(String label, Vector<T> vec) throws Exception
+	{
+		System.out.println(label + ": " + vec.toString());
+	}
+
 	/*
 	public Vector<FPair> vecStringToVecFPair(Vector<String> vec_of_string) throws Exception
 	{
@@ -251,8 +266,15 @@ public class Querier
 
 		for(FPair p : list){
 			PageInfo result = new PageInfo();
-			result.Title = database.metaIndex.getAllEntriesMeta(p.Key).get(0);
+			Vector<String> resultMeta = database.metaIndex.getAllEntriesMeta(p.Key);
 
+			result.Title = resultMeta.get(0);
+			result.Url = database.urlMapTable.getEntry(p.Key);
+			result.LastModifiedDate = resultMeta.get(1);
+			result.SizeOfPage = Integer.parseInt(resultMeta.get(2));
+
+
+			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
 			// Add meta data to search result
 			//results.add(database.metaIndex.getAllEntriesMeta(p.Key));
 			// Add child links to search result
@@ -263,6 +285,7 @@ public class Querier
 			
 			//links.add(database.urlMapTable.getEntry(p.Key));
 
+		System.out.println("\nSearch Result:");
 		return results;
 		//return links;
 	}
@@ -314,12 +337,16 @@ public class Querier
 
 				if(query.equals("quit"))
 					break;
-				/*
-				for(String s : querier.NaiveSearch(query, top_k))
-					System.out.println(s);
-					*/
+
+				// Print searching result by PageInfo
+
 				for(PageInfo doc : querier.NaiveSearch(query, top_k)){
-					System.out.println(doc.Title);
+					printlnWithLabel("Title", doc.Title);
+					printlnWithLabel("Url", doc.Url);
+					printlnWithLabel("Last Modified Date", doc.LastModifiedDate);
+					printlnWithLabel("Size of Page", doc.SizeOfPage);
+					printlnWithLabel("Child Links", doc.ChildLinkVector);
+					System.out.println("---------------------");
 				}
 
 			}
