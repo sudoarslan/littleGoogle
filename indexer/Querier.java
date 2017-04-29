@@ -38,16 +38,36 @@ public class Querier
 
 	public static void printlnWithLabelWPair(String label, Vector<WPair> vec) throws Exception
 	{
-		System.out.print(label + ": ");
-		for (WPair wp : vec){
-			System.out.print(wp.Key + "(" + String.valueOf(wp.Value) + ") ");
+		if(vec != null){
+			System.out.print(label + ": ");
+			for (WPair wp : vec){
+				System.out.print(wp.Key + "(" + String.valueOf(wp.Value) + ") ");
+			}
+			System.out.println();
 		}
-		System.out.println();
+		else
+			System.out.println(label + ": " + "none");
 	}
 
 	public static void printlnWithLabel(String label, Vector<String> vec) throws Exception
 	{
-		System.out.println(label + ": " + vec.toString());
+		if(vec != null)
+			System.out.println(label + ": " + vec.toString());
+		else
+			System.out.println(label + ": " + "none");
+	}
+
+	// Custom Sort
+	public void sort(Vector<Pair> plist, boolean forward) {
+	    Collections.sort(plist, new Comparator<Pair>() {
+	        @Override
+	        public int compare(Pair o1, Pair o2) {
+	        	if (forward)
+	            	return (o1.Value < o2.Value)?-1:(o1.Value > o2.Value)?1:0;
+	            else
+	            	return (o1.Value < o2.Value)?1:(o1.Value > o2.Value)?-1:0;
+	        }           
+	    });
 	}
 
 	/*
@@ -265,7 +285,6 @@ public class Querier
 
 		// All search results in FPAir format
 		Vector<FPair> list = FPair.TopK(scores, topK);
-
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
 
@@ -277,6 +296,10 @@ public class Querier
 			Vector<String> resultMeta = database.metaIndex.getAllEntriesMeta(p.Key);
 			// Get keyword pairs
 			Vector<Pair> resultKeywordFreq = database.forwardIndex.getAllEntriesId(p.Key);
+
+			// Sort the keywords by frequency, from largest to lowest(false)
+			sort(resultKeywordFreq, false);
+
 			for(int j = 0; j < 5; j++){
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
 					resultKeywordFreq.get(j).Value);

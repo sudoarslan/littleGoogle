@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class WPair
 {
 	public String Key;
@@ -8,4 +10,5 @@ public class WPair
 		Key = key;
 		Value = value;
 	}
+
 }

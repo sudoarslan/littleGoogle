@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Pair
 {
 	public int Key;
@@ -8,4 +10,5 @@ public class Pair
 		Key = key;
 		Value = value;
 	}
+
 }
