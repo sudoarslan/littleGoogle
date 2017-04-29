@@ -244,20 +244,22 @@ public class Querier
 		Vector<FPair> results = new Vector<FPair>();
 		//Get title of a document
 		String title = database.metaIndex.getAllEntriesMeta(doc_id).get(0);
-		System.out.println(title);
+		//System.out.println(title);
 
 		String[] title_array = title.split(" ");
 		System.out.println(Arrays.toString(title_array));
 
 		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
-		System.out.println(title_vec.toString());
+		//System.out.println(title_vec.toString());
 
 		// Extract title's words
 		HashSet<String> unique = new HashSet<String>(title_vec);
+		/*
 		Iterator iterator = unique.iterator(); 
 		while (iterator.hasNext()){
 	   		System.out.println("Value: "+iterator.next() + " ");  
 	   	}
+	   	*/
 
 		// Iterate through all the unique word
 		for(String word: unique)
@@ -298,41 +300,43 @@ public class Querier
 
 
 			//Summation of normal query score and quoted query score
-			double score = CosSim(n_query_weight, doc_weight);
+			double doc_score = CosSim(n_query_weight, doc_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
-				score += QCosSim(query_weight, doc_weight);
+				doc_score += QCosSim(query_weight, doc_weight);
 
-			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
+			//System.out.println(String.valueOf(i) + ": " + String.valueOf(doc_score));
 
 
 
 
 			// TODO: favor title
 			Vector<FPair> title_weight = TitleWeight(i);
-			printlnWithLabelFPair("title_weight", title_weight);
+			//printlnWithLabelFPair("title_weight", title_weight);
 
-			score += CosSim(n_query_weight, title_weight);
+			double title_score = CosSim(n_query_weight, title_weight);
 			for(Vector<FPair> query_weight : q_query_weight)
-				score += QCosSim(query_weight, title_weight);
+				title_score += QCosSim(query_weight, title_weight);
 
-			System.out.println(String.valueOf(i) + ": " + String.valueOf(score));
+			//System.out.println(String.valueOf(i) + ": " + String.valueOf(title_score));
+
+			if(title_score > 0){
+				System.out.println("This work! " + String.valueOf(i));
+			}
 
 
-
+			Double score = doc_score + title_score;
 
 
 			scores.add(new FPair(i, score));
 		}
 
-		System.out.println("Finish iteration");
+		//System.out.println("Finish iteration");
 
 
 		// All search results in FPAir format
 		Vector<FPair> list = FPair.TopK(scores, topK);
-		System.out.println("1");
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
-		System.out.println("2");
 
 
 		for(FPair p : list){
@@ -346,20 +350,15 @@ public class Querier
 			// Sort the keywords by frequency, from largest to lowest(false)
 			sort(resultKeywordFreq, false);
 
-			System.out.println("3");
-
+			// Avoid error when key word list length < 5
 			int max_keyarray_length = (resultKeywordFreq.size() > 5)? 5 : resultKeywordFreq.size();
 
 			for(int j = 0; j < max_keyarray_length; j++){
-				System.out.println("3-1");
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
 					resultKeywordFreq.get(j).Value);
-				System.out.println("3-2");
 				result.KeywordVector.add(keywordPair);
-				System.out.println("3-3");
 			}
 
-			System.out.println("4");
 
 			// Get title, url, date and size
 			result.Title = resultMeta.get(0);
@@ -371,8 +370,7 @@ public class Querier
 			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
 
 			// TODO: Get parent links
-
-			System.out.println("5");
+			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
 
 			results.add(result);
 		}
@@ -442,6 +440,7 @@ public class Querier
 					printlnWithLabel("Size of Page", doc.SizeOfPage);
 					printlnWithLabelWPair("Keywords", doc.KeywordVector);
 					printlnWithLabel("Child Links", doc.ChildLinkVector);
+					printlnWithLabel("Parent Links", doc.ParentLinkVector);
 					System.out.println("---------------------------------------------------------------");
 				}
 

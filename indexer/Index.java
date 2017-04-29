@@ -201,6 +201,23 @@ public class Index
 
 		return childLinks;
 	}
+
+	public Vector<String> getAllEntriesParentLink(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> parentLinks = new Vector<String>();
+		String[] list = value.split("\\s+");
+
+		for(int i = 1; i < list.length; i += 2)
+			parentLinks.add(list[i]);
+
+		return parentLinks;
+	}
 	
 
 	public Vector<String> getAllKeys() throws IOException {
