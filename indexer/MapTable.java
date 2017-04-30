@@ -145,4 +145,28 @@ public class MapTable
 
 		}
 	}
+
+	public Vector<String> getAll(boolean forward) throws IOException
+	{
+		Vector<String> results = new Vector<String>();
+
+		if(forward)
+		{
+			FastIterator iter = ForwardHashtable.keys();
+			Integer key;
+			while( (key=(Integer)iter.next()) != null )
+				//System.out.println(key + " = " + ForwardHashtable.get(key));
+				results.add((String)ForwardHashtable.get(key));
+		}
+		else
+		{
+			FastIterator iter = BackwardHashtable.keys();
+			String value;
+			while( (value=(String)iter.next()) != null )
+				//System.out.println(value + " = " + BackwardHashtable.get(value));
+				results.add((String)BackwardHashtable.get(value));
+		}
+
+		return results;
+	}
 }
