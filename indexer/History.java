@@ -15,7 +15,7 @@ public class History
 	public HTree history;
 
 	History() throws Exception
-    {
+    	{
 		recman = RecordManagerFactory.createRecordManager("queryDB");
 		history = LoadOrCreate("history");
 	}
@@ -44,14 +44,14 @@ public class History
 		// SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 		// String formattedDate = sdf.format(date);
 		String content = value +" ";
-		history.put(userID, value);
+		history.put(userID, content);
 	}
 
 	public void printAll() throws IOException{
-		// iterate through all keys
+	// iterate through all keys
         FastIterator iter = history.keys();
 
-		String key;
+	String key;
         while( (key = (String)iter.next())!=null)
         {
             // get and print the content of each key
