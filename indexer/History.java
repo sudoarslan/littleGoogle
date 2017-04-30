@@ -43,7 +43,7 @@ public class History
 		// Date date = new Date();
 		// SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 		// String formattedDate = sdf.format(date);
-		String content = value +"~";
+		String content = (String)history.get(userID);
 		if(content == null)
 			content = "~" + value;
 		else
