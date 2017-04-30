@@ -5,6 +5,8 @@ import jdbm.helper.FastIterator;
 import java.io.IOException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.Vector;
+import java.util.Arrays;
 
 public class History
 {
@@ -36,24 +38,36 @@ public class History
 		}
 	}
 
-	public void addEntry(String value) throws IOException{
+	public void addEntry(String userID, String value) throws IOException{
 		// current time as ID
-		Date date = new Date();
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
-		String formattedDate = sdf.format(date);
-		history.put(formattedDate, value);
+		// Date date = new Date();
+		// SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
+		// String formattedDate = sdf.format(date);
+		String content = (String)history.get(userID);
+		if(content == null)
+			content = "~" + value;
+		else
+			content += "~" + value;
+		history.put(userID, content);
 	}
 
 	public void printAll() throws IOException{
-		// iterate through all keys
+	// iterate through all keys
         FastIterator iter = history.keys();
 
-		String key;
+	String key;
         while( (key = (String)iter.next())!=null)
         {
             // get and print the content of each key
             System.out.println(key + " : " + history.get(key));
         }
+	}
+
+	public String[] getHistory(String user) throws IOException{
+		String content = (String)history.get(user);
+		String[] record = content.split("~");
+
+		return record;
 	}
 
 	// Save and confirm the changes of the database
