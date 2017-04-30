@@ -43,7 +43,7 @@ public class History
 		// Date date = new Date();
 		// SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 		// String formattedDate = sdf.format(date);
-		String content = value +" ";
+		String content = value +"~";
 		history.put(userID, content);
 	}
 
@@ -61,7 +61,7 @@ public class History
 
 	public String[] getHistory(String user) throws IOException{
 		String content = (String)history.get(user);
-		String[] record = content.split("\\s+");
+		String[] record = content.split("~");
 
 		return record;
 	}
