@@ -11,6 +11,7 @@ public class Querier
 	private History history;
 
 	private static final int TOP_K_RESULTS = 50;
+	private static final int MAX_KEYWORD_NUM = 5;
 
 	Querier() throws Exception
 	{
@@ -282,6 +283,12 @@ public class Querier
 	}
 
 
+	public String querySuggestion(String query) throws Exception
+	{
+		
+	}
+
+
 	public Vector<PageInfo> NaiveSearch(String query, Integer topK) throws Exception
 	{
 		//Converts query into VSM of weights
@@ -356,7 +363,7 @@ public class Querier
 			sort(resultKeywordFreq, false);
 
 			// Avoid error when key word list length < 5
-			int max_keyarray_length = (resultKeywordFreq.size() > 5)? 5 : resultKeywordFreq.size();
+			int max_keyarray_length = (resultKeywordFreq.size() > MAX_KEYWORD_NUM)? MAX_KEYWORD_NUM : resultKeywordFreq.size();
 
 			for(int j = 0; j < max_keyarray_length; j++){
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
@@ -374,7 +381,7 @@ public class Querier
 			// Get child links
 			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
 
-			// TODO: Get parent links
+			// Get parent links
 			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
 
 			// Store score
