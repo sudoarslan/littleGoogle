@@ -8,7 +8,6 @@ public class Querier
 {
 	private Database database;
 	private StopStem stopStem;
-	private History history;
 
 	private static final int TOP_K_RESULTS = 50;
 
@@ -16,7 +15,6 @@ public class Querier
 	{
 		database = new Database();
 		stopStem = new StopStem();
-		history = new History();
 	}
 
 	public double idf(int word_id) throws Exception
@@ -422,7 +420,6 @@ public class Querier
 		{
 			Querier querier = new Querier();
 			Scanner scanner = new Scanner(System.in);
-			History history = new History();
 
 			int top_k = TOP_K_RESULTS;
 
@@ -438,7 +435,6 @@ public class Querier
 
 				if(query.equals("quit"))
 					break;
-
 
 				// Print searching result by PageInfo
 				for(PageInfo doc : querier.NaiveSearch(query, top_k)){
@@ -457,9 +453,7 @@ public class Querier
 				history.addEntry(query);
 				System.out.println("\nSearch history: ");
 				history.printAll();
-
 			}
-			history.Finalize();
 		}
 		catch (Exception e)
 		{
