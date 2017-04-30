@@ -231,9 +231,9 @@ public class Crawler
 		int index = 0;
 		for(String link: links)
 		{
-			System.out.println("parent URL:"+url+", coressponding ID:"+url_id);
+			System.out.println("parent URL:"+url+", corresponding ID:"+url_id);
 			int link_id = database.urlMapTable.getKey(link);
-			System.out.println("child URL:"+link+", coressponding ID:"+link_id);
+			System.out.println("child URL:"+link+", corresponding ID:"+link_id);
 			// Insert the parent links into the Link Index: [link ID, link index, parent link id]
 			database.parentIndex.appendEntry(link_id, index++, url_id);
 			System.out.println("append:"+link_id+", "+url_id);
