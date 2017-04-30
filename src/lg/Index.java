@@ -1,9 +1,12 @@
 package lg;
 
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
 import jdbm.htree.HTree;
 import jdbm.helper.FastIterator;
 import java.util.Vector;
 import java.io.IOException;
+import java.io.Serializable;
 
 import java.util.Arrays;
 
@@ -37,6 +40,11 @@ public class Index
 	public int Int(String value)
 	{
 		return Integer.parseInt(value);
+	}
+
+	public String underscoreToSpace(String text)
+	{
+		return text.replaceAll("_"," ");
 	}
 
 	public void appendEntry(int ikey, int iid, int ivalue) throws IOException
@@ -74,7 +82,7 @@ public class Index
 		updateEntry(ikey, iid, Str(dvalue));
 	}
 
-	// Updates entry: 
+	// Updates entry:
 	public void updateEntry(int ikey, int iid, String value) throws IOException
 	{
 		String key = Str(ikey), id = Str(iid);
@@ -154,10 +162,79 @@ public class Index
 		Vector<FPair> weight = new Vector<FPair>();
 		String[] list = value.split("\\s+");
 		for(int i = 0; i < list.length; i += 2)
-			weight.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1]))); 
+			weight.add(new FPair(Int(list[i].replaceAll(Identifier, "")), Doub(list[i + 1])));
 
 		return weight;
 	}
+
+	// To be tested
+	// Get the metas for one single document
+	public Vector<String> getAllEntriesMeta(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> metas = new Vector<String>();
+		String[] list = value.split("\\s+");
+		// Recover the underscore save handler
+		for(int i = 1; i < list.length; i += 2)
+			metas.add(underscoreToSpace(list[i]));
+
+		return metas;
+	}
+
+
+	public Vector<String> getAllEntriesChildLink(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> childLinks = new Vector<String>();
+		String[] list = value.split("\\s+");
+
+		for(int i = 1; i < list.length; i += 2)
+			childLinks.add(list[i]);
+
+		return childLinks;
+	}
+
+	public Vector<String> getAllEntriesParentLink(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> parentLinks = new Vector<String>();
+		String[] list = value.split("\\s+");
+
+		for(int i = 1; i < list.length; i += 2)
+			parentLinks.add(list[i]);
+
+		return parentLinks;
+	}
+	
+
+	public Vector<String> getAllKeys() throws IOException {
+		Vector<String> allKeys = new Vector<String>();
+		FastIterator iter = Hashtable.keys();
+
+        String key;
+        while( (key = (String)iter.next())!=null)
+        {
+            allKeys.add(key);
+        }
+		return allKeys;
+	}
+
+
 
 	// Removes entire row
 	public void removeRow(int ikey) throws IOException
@@ -166,11 +243,28 @@ public class Index
 		Hashtable.remove(key);
 	}
 
+	public void removeAll() throws IOException
+	{
+		FastIterator iter = Hashtable.keys();
+		Vector<String> keys = new Vector<String>();
+		String key;
+		System.out.println("KEY");
+		while( ( key = (String)iter.next() ) != null ){
+			keys.add(key);
+		}
+		for(String deleteKey : keys){
+			removeRow(Int(deleteKey));
+		}
+		System.out.println("finish");
+	}
+
 	public void printAll() throws IOException
 	{
 		FastIterator iter = Hashtable.keys();
 		String key;
-		while( (key=(String)iter.next()) != null )
-			System.out.println(key + " = " + Hashtable.get(key));
+		System.out.println("KEY");
+		while( ( key = (String)iter.next() ) != null )
+			System.out.println(key + " = " + (String)Hashtable.get(key));
+		System.out.println("finish");
 	}
 }
