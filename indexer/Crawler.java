@@ -158,6 +158,8 @@ public class Crawler
 
 		// Get last modification date
 		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
 		metas.add(String.valueOf(last_modified_date));
 
 		// Get document size
@@ -231,9 +233,9 @@ public class Crawler
 		int index = 0;
 		for(String link: links)
 		{
-			System.out.println("parent URL:"+url+", coressponding ID:"+url_id);
+			System.out.println("parent URL:"+url+", corresponding ID:"+url_id);
 			int link_id = database.urlMapTable.getKey(link);
-			System.out.println("child URL:"+link+", coressponding ID:"+link_id);
+			System.out.println("child URL:"+link+", corresponding ID:"+link_id);
 			// Insert the parent links into the Link Index: [link ID, link index, parent link id]
 			database.parentIndex.appendEntry(link_id, index++, url_id);
 			System.out.println("append:"+link_id+", "+url_id);
@@ -305,7 +307,7 @@ public class Crawler
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
 
-		// TODO: update meta data for each page
+		// Update meta data for each page
 		updateMetaIndex(link, extractMetas(link));
 
 		setHistory(link);

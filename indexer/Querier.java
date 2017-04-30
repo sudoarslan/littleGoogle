@@ -36,6 +36,11 @@ public class Querier
 		System.out.println(label + ": " + String.valueOf(num));
 	}
 
+	public static void printlnWithLabel(String label, double num) throws Exception
+	{
+		System.out.println(label + ": " + String.valueOf(num));
+	}
+
 	public static void printlnWithLabelWPair(String label, Vector<WPair> vec) throws Exception
 	{
 		if(vec != null){
@@ -372,6 +377,9 @@ public class Querier
 			// TODO: Get parent links
 			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
 
+			// Store score
+			result.Score = p.Value;
+
 			results.add(result);
 		}
 			
@@ -438,6 +446,7 @@ public class Querier
 					printlnWithLabel("Url", doc.Url);
 					printlnWithLabel("Last Modified Date", doc.LastModifiedDate);
 					printlnWithLabel("Size of Page", doc.SizeOfPage);
+					printlnWithLabel("Score", doc.Score);
 					printlnWithLabelWPair("Keywords", doc.KeywordVector);
 					printlnWithLabel("Child Links", doc.ChildLinkVector);
 					printlnWithLabel("Parent Links", doc.ParentLinkVector);
