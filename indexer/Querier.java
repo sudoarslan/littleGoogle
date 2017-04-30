@@ -434,19 +434,25 @@ public class Querier
 			result.SizeOfPage = Integer.parseInt(resultMeta.get(2));
 
 			// Get child links
-			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
-
+			Vector<String> childLinkVecID = database.linkIndex.getAllEntriesChildLink(p.Key);
+			for (String id : childLinkVecID){
+				result.ChildLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+			}
+			
 			// Get parent links
-			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
+			//result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
+
+			Vector<String> parentLinkVecID = database.linkIndex.getAllEntriesParentLink(p.Key);
+			for (String id : parentLinkVecID){
+				result.ParentLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+			}
 
 			// Store score
 			result.Score = p.Value;
 
-			
-
 			results.add(result);
 		}
-		System.out.println("\nSearch Result:\n");
+		
 
 		// Get suggested query
 		String suggestedQuery = querySuggestion(query);
@@ -510,6 +516,8 @@ public class Querier
 				SearchResult searchResult = querier.NaiveSearch(query, top_k);
 				String suggestedQuery = searchResult.SuggestedQuery;
 				System.out.println("\nSuggested Query: " + suggestedQuery);
+
+				System.out.println("\nSearch Result:");
 
 				for(PageInfo doc : searchResult.PageInfoVector){
 					printlnWithLabel("Title", doc.Title);
