@@ -178,13 +178,47 @@ public class Index
 		Vector<String> metas = new Vector<String>();
 		String[] list = value.split("\\s+");
 		// Recover the underscore save handler
-		for(String meta : list)
-		{
-			metas.add(underscoreToSpace(meta));
-		}
+		for(int i = 1; i < list.length; i += 2)
+			metas.add(underscoreToSpace(list[i]));
 
 		return metas;
 	}
+
+
+	public Vector<String> getAllEntriesChildLink(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> childLinks = new Vector<String>();
+		String[] list = value.split("\\s+");
+
+		for(int i = 1; i < list.length; i += 2)
+			childLinks.add(list[i]);
+
+		return childLinks;
+	}
+
+	public Vector<String> getAllEntriesParentLink(int ikey) throws IOException
+	{
+		String key = Str(ikey);
+		String value = (String)Hashtable.get(key);
+
+		if(value == null)
+			return null;
+
+		Vector<String> parentLinks = new Vector<String>();
+		String[] list = value.split("\\s+");
+
+		for(int i = 1; i < list.length; i += 2)
+			parentLinks.add(list[i]);
+
+		return parentLinks;
+	}
+	
 
 	public Vector<String> getAllKeys() throws IOException {
 		Vector<String> allKeys = new Vector<String>();
@@ -197,6 +231,7 @@ public class Index
         }
 		return allKeys;
 	}
+
 
 
 	// Removes entire row
