@@ -158,6 +158,8 @@ public class Crawler
 
 		// Get last modification date
 		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
 		metas.add(String.valueOf(last_modified_date));
 
 		// Get document size
@@ -305,7 +307,7 @@ public class Crawler
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
 
-		// TODO: update meta data for each page
+		// Update meta data for each page
 		updateMetaIndex(link, extractMetas(link));
 
 		setHistory(link);
