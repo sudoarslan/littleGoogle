@@ -8,13 +8,22 @@ public class Querier
 {
 	private Database database;
 	private StopStem stopStem;
+	private History history;
+	private Vector<String> allWords;
+
 
 	private static final int TOP_K_RESULTS = 50;
+	private static final int MAX_KEYWORD_NUM = 5;
+	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
+	private static final int NEAREST_WORD_TOLERATE_BELOW = 3; // nearest word's length can be 3 units shorter
 
 	Querier() throws Exception
 	{
 		database = new Database();
 		stopStem = new StopStem();
+		history = new History();
+		allWords = database.wordMapTable.getAll(true);
+
 	}
 
 	public double idf(int word_id) throws Exception
@@ -278,9 +287,66 @@ public class Querier
 
 		return results;
 	}
+	
+	public String findNearestWord(String word) throws Exception
+	{
+		//System.out.println("This word to be found for: " + word);
+
+		int minDistance = 100;
+		String nearestWord = "NA";
+		int len_of_word = word.length();
+		
+		for (String candidate_word : allWords){
+			int len_of_candidate = candidate_word.length();
+
+			int levDistance = Levenshtein.distance(word, candidate_word);
+			if(levDistance < minDistance){
+				minDistance = levDistance;
+				nearestWord = candidate_word;
+			}
+		}
+
+		return nearestWord;
+	}
+	
+
+	public String querySuggestion(String query) throws Exception
+	{
+		//split and filter query string to vector space
+		String[] word_array = query.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase().split(" ");
+
+		Vector<String> suggest_query_vector = new Vector<String>();
+
+		for (String word : word_array){
+			if(stopStem.isStopWord(word)){
+				suggest_query_vector.add(word);
+			} else {
+
+				String stem_word = stopStem.stem(word);
+
+				int validity = database.wordMapTable.getKey(stem_word);
+
+				if(validity == -1){
+					suggest_query_vector.add(findNearestWord(word));
+				} else {
+					suggest_query_vector.add(word);
+				}
+
+			}
+		}
+
+		String result = "";
+		for (String word : suggest_query_vector){
+			result += word + " ";
+		}
+		//result.substring(result.length()-2);
+		//String result = suggest_query_vector.toString();
+
+		return result;
+	}
 
 
-	public Vector<PageInfo> NaiveSearch(String query, Integer topK) throws Exception
+	public SearchResult NaiveSearch(String query, Integer topK) throws Exception
 	{
 		//Converts query into VSM of weights
 		// "normal unquoted" & "quoted"
@@ -354,7 +420,7 @@ public class Querier
 			sort(resultKeywordFreq, false);
 
 			// Avoid error when key word list length < 5
-			int max_keyarray_length = (resultKeywordFreq.size() > 5)? 5 : resultKeywordFreq.size();
+			int max_keyarray_length = (resultKeywordFreq.size() > MAX_KEYWORD_NUM)? MAX_KEYWORD_NUM : resultKeywordFreq.size();
 
 			for(int j = 0; j < max_keyarray_length; j++){
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
@@ -370,22 +436,32 @@ public class Querier
 			result.SizeOfPage = Integer.parseInt(resultMeta.get(2));
 
 			// Get child links
-			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
+			Vector<String> childLinkVecID = database.linkIndex.getAllEntriesChildLink(p.Key);
+			for (String id : childLinkVecID){
+				result.ChildLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+			}
+			
+			// Get parent links
+			//result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
 
-			// TODO: Get parent links
-			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
+			Vector<String> parentLinkVecID = database.linkIndex.getAllEntriesParentLink(p.Key);
+			for (String id : parentLinkVecID){
+				result.ParentLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+			}
 
 			// Store score
 			result.Score = p.Value;
 
 			results.add(result);
 		}
-			
-			
+		
 
-		System.out.println("\nSearch Result:\n");
-		return results;
-		//return links;
+		// Get suggested query
+		String suggestedQuery = querySuggestion(query);
+
+		SearchResult searchResults = new SearchResult(suggestedQuery, results);
+
+		return searchResults;
 	}
 
 	//Prints all websites containing any of the query words
@@ -437,7 +513,13 @@ public class Querier
 					break;
 
 				// Print searching result by PageInfo
-				for(PageInfo doc : querier.NaiveSearch(query, top_k)){
+				SearchResult searchResult = querier.NaiveSearch(query, top_k);
+				String suggestedQuery = searchResult.SuggestedQuery;
+				System.out.println("\nSuggested Query: " + suggestedQuery);
+
+				System.out.println("\nSearch Result:");
+
+				for(PageInfo doc : searchResult.PageInfoVector){
 					printlnWithLabel("Title", doc.Title);
 					printlnWithLabel("Url", doc.Url);
 					printlnWithLabel("Last Modified Date", doc.LastModifiedDate);

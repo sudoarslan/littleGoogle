@@ -19,8 +19,8 @@ public class PageInfo
 		LastModifiedDate = "";
 		SizeOfPage = 0;
 		KeywordVector = new Vector<WPair>();
-		ParentLinkVector = null;
-		ChildLinkVector = null;
+		ParentLinkVector = new Vector<String>();
+		ChildLinkVector = new Vector<String>();
 		Score = 0.0;
 	}
 
