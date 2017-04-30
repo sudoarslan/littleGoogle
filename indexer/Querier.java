@@ -449,10 +449,6 @@ public class Querier
 					System.out.println("---------------------------------------------------------------");
 				}
 
-				// Add to query history
-				history.addEntry(query);
-				System.out.println("\nSearch history: ");
-				history.printAll();
 			}
 		}
 		catch (Exception e)
