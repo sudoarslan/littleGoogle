@@ -11,6 +11,7 @@ public class Querier
 	private History history;
 	private Vector<String> allWords;
 
+
 	private static final int TOP_K_RESULTS = 50;
 	private static final int MAX_KEYWORD_NUM = 5;
 	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
@@ -22,6 +23,7 @@ public class Querier
 		stopStem = new StopStem();
 		history = new History();
 		allWords = database.wordMapTable.getAll(true);
+
 	}
 
 	public double idf(int word_id) throws Exception
@@ -494,7 +496,6 @@ public class Querier
 		{
 			Querier querier = new Querier();
 			Scanner scanner = new Scanner(System.in);
-			History history = new History();
 
 			int top_k = TOP_K_RESULTS;
 
@@ -510,7 +511,6 @@ public class Querier
 
 				if(query.equals("quit"))
 					break;
-
 
 				// Print searching result by PageInfo
 				SearchResult searchResult = querier.NaiveSearch(query, top_k);
@@ -531,13 +531,7 @@ public class Querier
 					System.out.println("---------------------------------------------------------------");
 				}
 
-				// Add to query history
-				history.addEntry(query);
-				System.out.println("\nSearch history: ");
-				history.printAll();
-
 			}
-			history.Finalize();
 		}
 		catch (Exception e)
 		{
