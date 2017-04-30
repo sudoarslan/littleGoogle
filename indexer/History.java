@@ -15,7 +15,7 @@ public class History
 	public HTree history;
 
 	History() throws Exception
-    	{
+    {
 		recman = RecordManagerFactory.createRecordManager("queryDB");
 		history = LoadOrCreate("history");
 	}
@@ -44,6 +44,10 @@ public class History
 		// SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
 		// String formattedDate = sdf.format(date);
 		String content = value +"~";
+		if(content == null)
+			content = "~" + value;
+		else
+			content += "~" + value;
 		history.put(userID, content);
 	}
 
