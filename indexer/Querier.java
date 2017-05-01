@@ -21,7 +21,7 @@ public class Querier
 	private static final int MAX_KEYWORD_NUM = 5;
 	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
 	private static final int NEAREST_WORD_TOLERATE_BELOW = 3; // nearest word's length can be 3 units shorter
-	private static final double S_WEIGHT = 0.9;
+	private static final double S_WEIGHT = 1.0;
 
 	Querier() throws Exception
 	{
@@ -535,10 +535,10 @@ public class Querier
 
 			int top_k = TOP_K_RESULTS;
 
-			double similairty_w = S_WEIGHT;
+			double similarity_w = S_WEIGHT;
 
 			if(args.length > 0)
-				top_k = Integer.parseInt(args[0]);
+				similarity_w = Double.parseDouble(args[0]);
 
 			System.out.println("Displaying Top-" + top_k + " results");
 
@@ -555,7 +555,7 @@ public class Querier
 					break;
 
 				// Print searching result by PageInfo
-				SearchResult searchResult = querier.NaiveSearch(query, top_k, similairty_w);
+				SearchResult searchResult = querier.NaiveSearch(query, top_k, similarity_w);
 				String suggestedQuery = searchResult.SuggestedQuery;
 				System.out.println("\nSuggested Query: " + suggestedQuery);
 
