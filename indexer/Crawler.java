@@ -76,6 +76,32 @@ public class Crawler
 		return text.replaceAll("\\s+","_");
 	}
 
+	// Get the last-modified-date without connection provided
+	public String getLastModifiedDate(String target_url) throws Exception
+	{
+		// Create URL connection to retrieve header information
+		URL url = new URL(target_url);
+		URLConnection connection = url.openConnection();
+
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
+	// Get the last-modified-date with connection provided
+	public String getLastModifiedDate(String target_url, URLConnection connection) throws Exception
+	{
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
 	public void Finalize() throws Exception
 	{
 		//Stores weights(tf * idf) vector for each document
@@ -156,11 +182,8 @@ public class Crawler
 		URL url = new URL(parent);
 		URLConnection connection = url.openConnection();
 
-		// Get last modification date
-		String last_modified_date = connection.getHeaderField("Last-Modified");
-		if (last_modified_date == "0" || last_modified_date == null)
-			last_modified_date = "N/A";
-		metas.add(String.valueOf(last_modified_date));
+		// Get last-modified-date
+		metas.add(getLastModifiedDate(parent, connection));
 
 		// Get document size
 		String document_size = connection.getHeaderField("content-Length");
@@ -302,6 +325,9 @@ public class Crawler
 		if(crawled(link))
 			return 0;
 
+		// TODO: check last modified date
+		//if()
+
 		System.out.println(link);
 
 		Vector<String> extractedLinks = extractLinks(link);
@@ -310,7 +336,6 @@ public class Crawler
 		updateParentIndex(link, extractedLinks);
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
-
 		// Update meta data for each page
 		updateMetaIndex(link, extractMetas(link));
 
