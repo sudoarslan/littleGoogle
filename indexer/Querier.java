@@ -399,15 +399,13 @@ public class Querier
 			scores.add(new FPair(i, score));
 		}
 
-		//System.out.println("Finish iteration");
-
 
 		// All search results in FPAir format
 		Vector<FPair> list = FPair.TopK(scores, topK);
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
 
-
+		// Create PageInfo for each page
 		for(FPair p : list){
 			// Single search result
 			PageInfo result = new PageInfo();
@@ -422,12 +420,12 @@ public class Querier
 			// Avoid error when key word list length < 5
 			int max_keyarray_length = (resultKeywordFreq.size() > MAX_KEYWORD_NUM)? MAX_KEYWORD_NUM : resultKeywordFreq.size();
 
+
 			for(int j = 0; j < max_keyarray_length; j++){
 				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
 					resultKeywordFreq.get(j).Value);
 				result.KeywordVector.add(keywordPair);
 			}
-
 
 			// Get title, url, date and size
 			result.Title = resultMeta.get(0);
@@ -437,17 +435,27 @@ public class Querier
 
 			// Get child links
 			Vector<String> childLinkVecID = database.linkIndex.getAllEntriesChildLink(p.Key);
-			for (String id : childLinkVecID){
-				result.ChildLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+
+			if(childLinkVecID == null){
+				result.ChildLinkVector.add("N/A");
+			} else {
+				for (String id : childLinkVecID){
+					result.ChildLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+				}
 			}
+
 			
 			// Get parent links
-			//result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
-
 			Vector<String> parentLinkVecID = database.linkIndex.getAllEntriesParentLink(p.Key);
-			for (String id : parentLinkVecID){
-				result.ParentLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+
+			if(parentLinkVecID == null){
+				result.ParentLinkVector.add("N/A");
+			} else {
+				for (String id : parentLinkVecID){
+					result.ParentLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+				}
 			}
+
 
 			// Store score
 			result.Score = p.Value;
