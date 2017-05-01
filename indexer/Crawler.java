@@ -246,6 +246,11 @@ public class Crawler
 		database.parentIndex.removeAll();
 	}
 
+	public void clearAll() throws Exception
+	{
+		database.ClearAll();
+	}
+
 	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
 	{
 		// Get the Document ID
@@ -265,7 +270,6 @@ public class Crawler
 			// meta = ["title", "last modified date", "size of page"]
 			database.metaIndex.appendEntry(url_id, index++, underscored_meta);
 		}
-
 	}
 
 	//Extract all links in the website
@@ -321,7 +325,8 @@ public class Crawler
 		{
 			Crawler crawler = new Crawler();
 			// clear all data in parentIndex
-			crawler.removeAllParent();
+			//crawler.removeAllParent();
+			crawler.clearAll();
 			// Initialization
 			System.out.println("Initializing..");
 

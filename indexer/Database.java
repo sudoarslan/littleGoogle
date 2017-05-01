@@ -64,6 +64,20 @@ public class Database
 		}
 	}
 
+	public void ClearAll() throws IOException
+	{
+		invertedIndex.removeAll();
+		forwardIndex.removeAll();
+		linkIndex.removeAll();
+		vsmIndex.removeAll();
+		positionIndex.removeAll();
+		metaIndex.removeAll();
+		parentIndex.removeAll();
+		
+		wordMapTable.removeAll();
+		urlMapTable.removeAll();
+	}
+
 	// Save and confirm the changes of the database
 	public void Finalize() throws IOException
 	{
