@@ -337,10 +337,10 @@ public class Crawler
 			Vector<String> stored_meta = database.metaIndex.getAllEntriesMeta(stored_key);
 
 			//System.out.println(stored_meta);
-
-			if (stored_meta != null){
+			
+            if (stored_meta != null){
 				String stored_last_modified_date = stored_meta.get(1);
-				//System.out.println("======================== stored date!!" + stored_last_modified_date);
+				System.out.println("======================== stored date!!" + stored_last_modified_date);
 
 				// If True, then there's no update on the page
 				if(stored_last_modified_date.equals(last_modified_date)){
@@ -376,7 +376,6 @@ public class Crawler
 			Crawler crawler = new Crawler();
 			// clear all data in parentIndex
 			//crawler.removeAllParent();
-			crawler.clearAll();
 			// Initialization
 			System.out.println("Initializing..");
 
