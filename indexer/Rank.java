@@ -14,7 +14,7 @@ public class Rank
 	private Database database;
 
     private double d = 0.85;
-    private int iterationNum = 10;
+    private int iterationNum = 50;
 
 	Rank() throws Exception
     {
