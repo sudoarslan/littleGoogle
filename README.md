@@ -1,6 +1,6 @@
 # littleGoogle
 
-##Indexer
+## Indexer
 
 The indexer folder contains web crawler, indexer and database insertion functionalities.
 Changes are still required depending on the course requirements.
