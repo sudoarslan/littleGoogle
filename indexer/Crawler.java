@@ -44,10 +44,14 @@ public class Crawler
 		stopStem = new StopStem();
 	}
 
-	public double idf(int word_id) throws Exception
+	public double idf(int word_id, boolean isTitle) throws Exception
 	{
 		int N = database.urlMapTable.getMaxId();
-		int df = database.invertedIndex.getAllEntriesId(word_id).size();
+		int df = 0;
+		if(isTitle)
+			df = database.titleInvertedIndex.getAllEntriesId(word_id).size();
+		else
+			df = database.invertedIndex.getAllEntriesId(word_id).size();
 		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
 	}
 
@@ -108,6 +112,7 @@ public class Crawler
 		int max_doc = database.urlMapTable.getMaxId();
 		for(int i = 0; i < max_doc; i++)
 		{
+			// Handle document content
 			database.vsmIndex.removeRow(i);
 			//For each document, append all tf*idf to index
 			Vector<Pair> doc = database.forwardIndex.getAllEntriesId(i);
@@ -123,8 +128,29 @@ public class Crawler
 			{
 				Pair word = doc.get(j);
 				//length of entries per word = df of the word
-				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key) / max_tf);
+				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key, false) / max_tf);
 			}
+
+
+			// Handle document title
+			database.titleVsmIndex.removeRow(i);
+			//For each document, append all tf*idf to index
+			Vector<Pair> doc_title = database.titleForwardIndex.getAllEntriesId(i);
+			if(doc_title == null)
+				continue;
+
+			int max_tf_title = 0;
+			for(int j = 0; j < doc_title.size(); j++)
+				if(doc_title.get(j).Value > max_tf_title)
+					max_tf_title = doc_title.get(j).Value;
+
+			for(int j = 0; j < doc_title.size(); j++)
+			{
+				Pair word = doc_title.get(j);
+				//length of entries per word = df of the word
+				database.titleVsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key, true) / max_tf_title);
+			}
+
 		}
 
 		database.Finalize();
@@ -228,6 +254,30 @@ public class Crawler
 
 	}
 
+	//Find the occurence of each title in the string vector, save the frequency to the database
+	public void updateTitleIndex(String url, Vector<String> words) throws Exception
+	{
+		// Get the Document ID
+		int doc_id = database.urlMapTable.getKey(url);
+		if(doc_id == -1)
+			throw new Exception("Link not found, cannot insert word to index");
+
+		// Collect all the words in a Hash Set
+		HashSet<String> unique = new HashSet<String>(words);
+		// Iterate through all the words in the document
+		for(String word: unique)
+		{
+			// Get the term frequency(tf) of the word
+			int freq = Collections.frequency(words, word);
+			// Insert the word into wordMapTable and get the word ID
+			int word_id = database.wordMapTable.appendEntry(word);
+			// Insert the word into Inverted File: [word, document ID, term frequency]
+			database.titleInvertedIndex.updateEntry(word_id, doc_id, freq);
+			// Insert the word into the Forward Index: [document ID, word ID, term frequency]
+			database.titleForwardIndex.updateEntry(doc_id, word_id, freq);
+		}
+	}
+
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
 		// Insert the url into urlMapTable and get the url ID
@@ -293,6 +343,20 @@ public class Crawler
 			// meta = ["title", "last modified date", "size of page"]
 			database.metaIndex.appendEntry(url_id, index++, underscored_meta);
 		}
+
+		String title = metas.get(0);
+		String[] title_array = title.split(" ");
+
+		Vector<String> stemmedTitle = new Vector<String>();
+		for(String word : title_array)
+		{
+			String p_word = word.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase();
+			if(!p_word.isEmpty() && !stopStem.isStopWord(p_word))
+				stemmedTitle.add(stopStem.stem(p_word));
+		}
+
+		//System.out.println(stemmedTitle.toString());
+		updateTitleIndex(url, stemmedTitle);
 	}
 
 	//Extract all links in the website

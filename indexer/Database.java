@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta", "parent"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta", "parent", "title", "titlevsm", "titleforward"};
 
 	private RecordManager recman;
 
@@ -20,6 +20,9 @@ public class Database
 	public Index	positionIndex;
 	public Index    metaIndex;
 	public Index	parentIndex;
+	public Index    titleInvertedIndex;
+	public Index    titleVsmIndex;
+	public Index    titleForwardIndex;
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
@@ -37,6 +40,9 @@ public class Database
 		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
 		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[7]), "M");
 		parentIndex   = new Index(LoadOrCreate(HASHTABLE_NAME[8]), "A");
+		titleInvertedIndex = new Index(LoadOrCreate(HASHTABLE_NAME[9]), "T");
+		titleVsmIndex = new Index(LoadOrCreate(HASHTABLE_NAME[10]), "U");
+		titleForwardIndex = new Index(LoadOrCreate(HASHTABLE_NAME[11]), "F");
 
 		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
 		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));
@@ -74,6 +80,9 @@ public class Database
 		positionIndex.removeAll();
 		metaIndex.removeAll();
 		parentIndex.removeAll();
+		titleInvertedIndex.removeAll();
+		titleVsmIndex.removeAll();
+		titleForwardIndex.removeAll();
 
 		wordMapTable.removeAll();
 		urlMapTable.removeAll();
@@ -148,6 +157,21 @@ public class Database
 			{
 				System.out.println("Urls");
 				db.urlMapTable.printAll(order);
+			}
+			else if(hashtable_name.equals("title"))
+			{
+				System.out.println("Title Inverted");
+				db.titleInvertedIndex.printAll();
+			}
+			else if(hashtable_name.equals("titlevsm"))
+			{
+				System.out.println("Title VSMs");
+				db.titleVsmIndex.printAll();
+			}
+			else if(hashtable_name.equals("titleforward"))
+			{
+				System.out.println("Title Forward");
+				db.titleForwardIndex.printAll();
 			}
 		}
 		catch(Exception e)

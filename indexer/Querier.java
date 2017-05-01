@@ -275,27 +275,19 @@ public class Querier
 
 	// TODO: get the title of a document
 	// The title's tf of the document
+	/*
 	public Vector<FPair> TitleWeight(int doc_id) throws Exception
 	{
 		Vector<FPair> results = new Vector<FPair>();
 		//Get title of a document
 		String title = database.metaIndex.getAllEntriesMeta(doc_id).get(0);
-		//System.out.println(title);
 
 		String[] title_array = title.split(" ");
-		//System.out.println(Arrays.toString(title_array));
 
 		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
-		//System.out.println(title_vec.toString());
 
 		// Extract title's words
 		HashSet<String> unique = new HashSet<String>(title_vec);
-		/*
-		Iterator iterator = unique.iterator();
-		while (iterator.hasNext()){
-	   		System.out.println("Value: "+iterator.next() + " ");
-	   	}
-	   	*/
 
 		// Iterate through all the unique word
 		for(String word: unique)
@@ -310,6 +302,12 @@ public class Querier
 		}
 
 		return results;
+	}
+	*/
+	public Vector<FPair> TitleWeight(int doc_id) throws Exception
+	{
+		//Get all words of a document
+		return database.titleVsmIndex.getAllEntriesVSM(doc_id);
 	}
 
 	public String findNearestWord(String word) throws Exception
@@ -415,10 +413,11 @@ public class Querier
 				title_score += QCosSim(query_weight, title_weight);
 
 			//System.out.println(String.valueOf(i) + ": " + String.valueOf(title_score));
-
+			/*
 			if(title_score > 0){
 				System.out.println("This work! " + String.valueOf(i));
 			}
+			*/
 
 
 			Double score = doc_score + title_score;
