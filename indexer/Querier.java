@@ -386,6 +386,7 @@ public class Querier
 		int max_doc = database.urlMapTable.getMaxId();
 
 		Vector<FPair> scores = new Vector<FPair>();
+		Vector<FPair> PR = new Vector<FPair>();
 		for(int i = 0; i < max_doc; i++)
 		{
 			//Get tf-idf vector of a document
@@ -420,17 +421,17 @@ public class Querier
 			}
 
 
-			Double similiarity_score = doc_score + title_score;
+			Double score = doc_score + title_score;
 			String skey = Str(i);
 			Double pagerank = (Double)rank.get(skey);
-			Double score = similairty_w * similiarity_score + (1-similairty_w) * pagerank;
+			PR.add(new FPair(i, pagerank));
 
 			scores.add(new FPair(i, score));
 		}
 
 
 		// All search results in FPAir format
-		Vector<FPair> list = FPair.TopK(scores, topK);
+		Vector<FPair> list = FPair.TopK(scores, topK, PR, similairty_w);
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
 
