@@ -22,6 +22,7 @@ public class Querier
 	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
 	private static final int NEAREST_WORD_TOLERATE_BELOW = 3; // nearest word's length can be 3 units shorter
 	private static final double S_WEIGHT = 1.0;
+	private static final double TITLE_FAVOR_WEIGHT = 2.0;
 
 	Querier() throws Exception
 	{
@@ -273,40 +274,10 @@ public class Querier
 		return database.vsmIndex.getAllEntriesVSM(doc_id);
 	}
 
-	// TODO: get the title of a document
 	// The title's tf of the document
-	/*
 	public Vector<FPair> TitleWeight(int doc_id) throws Exception
 	{
-		Vector<FPair> results = new Vector<FPair>();
-		//Get title of a document
-		String title = database.metaIndex.getAllEntriesMeta(doc_id).get(0);
-
-		String[] title_array = title.split(" ");
-
-		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
-
-		// Extract title's words
-		HashSet<String> unique = new HashSet<String>(title_vec);
-
-		// Iterate through all the unique word
-		for(String word: unique)
-		{
-			// Get the term frequency(tf) of the word
-			int freq = Collections.frequency(title_vec, word);
-			int word_id = database.wordMapTable.getKey(word);
-
-			FPair result = new FPair(word_id, freq);
-
-			results.add(result);
-		}
-
-		return results;
-	}
-	*/
-	public Vector<FPair> TitleWeight(int doc_id) throws Exception
-	{
-		//Get all words of a document
+		//Get all title of a document
 		return database.titleVsmIndex.getAllEntriesVSM(doc_id);
 	}
 
@@ -420,7 +391,7 @@ public class Querier
 			*/
 
 
-			Double score = doc_score + title_score;
+			Double score = doc_score + title_score * TITLE_FAVOR_WEIGHT;
 			String skey = Str(i);
 			Double pagerank = (Double)rank.get(skey);
 			PR.add(new FPair(i, pagerank));
