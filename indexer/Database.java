@@ -23,7 +23,8 @@ public class Database
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
-	public MapTable rankMapTable;
+
+	public HTree rank;
 
 	Database() throws IOException
 	{
@@ -73,7 +74,7 @@ public class Database
 		positionIndex.removeAll();
 		metaIndex.removeAll();
 		parentIndex.removeAll();
-		
+
 		wordMapTable.removeAll();
 		urlMapTable.removeAll();
 	}

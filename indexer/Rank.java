@@ -135,21 +135,4 @@ public class Rank
 		recman.close();
 		System.out.println("Closed");
 	}
-
-    public static void main(String[] args)
-	{
-		try
-		{
-            Rank rank = new Rank();
-            rank.initializeAll();
-            rank.calculateAll();
-			rank.printAll();
-			rank.Finalize();
-		}
-		catch (Exception e)
-		{
-			System.err.println("Error1");
-			System.err.println(e.toString());
-		}
-	}
 }

@@ -343,6 +343,13 @@ public class Crawler
 
 			// Save the database
 			crawler.Finalize();
+
+			// rank table generates
+			Rank rank = new Rank();
+			rank.initializeAll();
+			rank.calculateAll();
+			rank.printAll();
+			rank.Finalize();
 		}
 		catch (Exception e)
 		{
