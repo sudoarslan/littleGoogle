@@ -343,7 +343,7 @@ public class Crawler
 				//System.out.println("======================== stored date!!" + stored_last_modified_date);
 
 				// If True, then there's no update on the page
-				if(stored_last_modified_date == last_modified_date){
+				if(stored_last_modified_date.equals(last_modified_date)){
 					System.out.println("Skip fresh link crawled");
 					extractLinks(link);
 					setHistory(link);
