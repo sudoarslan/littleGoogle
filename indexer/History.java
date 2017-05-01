@@ -16,7 +16,7 @@ public class History
 
 	History() throws Exception
     {
-		recman = RecordManagerFactory.createRecordManager("queryDB");
+		recman = RecordManagerFactory.createRecordManager("indexDB");
 		history = LoadOrCreate("history");
 	}
 
