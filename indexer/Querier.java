@@ -482,6 +482,7 @@ public class Querier
 			result.Score = p.Value;
 
 			results.add(result);
+			recman.close();
 		}
 
 
