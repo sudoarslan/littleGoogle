@@ -76,6 +76,32 @@ public class Crawler
 		return text.replaceAll("\\s+","_");
 	}
 
+	// Get the last-modified-date without connection provided
+	public String getLastModifiedDate(String target_url) throws Exception
+	{
+		// Create URL connection to retrieve header information
+		URL url = new URL(target_url);
+		URLConnection connection = url.openConnection();
+
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
+	// Get the last-modified-date with connection provided
+	public String getLastModifiedDate(String target_url, URLConnection connection) throws Exception
+	{
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
 	public void Finalize() throws Exception
 	{
 		//Stores weights(tf * idf) vector for each document
@@ -156,11 +182,8 @@ public class Crawler
 		URL url = new URL(parent);
 		URLConnection connection = url.openConnection();
 
-		// Get last modification date
-		String last_modified_date = connection.getHeaderField("Last-Modified");
-		if (last_modified_date == "0" || last_modified_date == null)
-			last_modified_date = "N/A";
-		metas.add(String.valueOf(last_modified_date));
+		// Get last-modified-date
+		metas.add(getLastModifiedDate(parent, connection));
 
 		// Get document size
 		String document_size = connection.getHeaderField("content-Length");
@@ -302,6 +325,32 @@ public class Crawler
 		if(crawled(link))
 			return 0;
 
+		// Check the last-modified-date. 
+		// If inserted but updated externally, need to crawl again, otherwise return.
+		int stored_key = database.urlMapTable.getKey(link);
+		// The link is inserted already
+		if(stored_key != -1){
+			String last_modified_date = getLastModifiedDate(link);
+			//System.out.println("Testing: last_modified_date: " + last_modified_date);
+			//System.out.println(stored_key);
+
+			Vector<String> stored_meta = database.metaIndex.getAllEntriesMeta(stored_key);
+
+			//System.out.println(stored_meta);
+
+			if (stored_meta != null){
+				String stored_last_modified_date = stored_meta.get(1);
+				//System.out.println("======================== stored date!!" + stored_last_modified_date);
+
+				// If True, then there's no update on the page
+				if(stored_last_modified_date == last_modified_date){
+					System.out.println("Skip fresh link crawled");
+					return 0;
+				}
+			}
+		}
+
+
 		System.out.println(link);
 
 		Vector<String> extractedLinks = extractLinks(link);
@@ -310,7 +359,6 @@ public class Crawler
 		updateParentIndex(link, extractedLinks);
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
-
 		// Update meta data for each page
 		updateMetaIndex(link, extractMetas(link));
 
