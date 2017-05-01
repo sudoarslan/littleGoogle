@@ -35,7 +35,9 @@ public class FPair implements Comparable<FPair>
 			double score = list.get(i).Value;
 			if(score > 0.0){
 				FPair new_pair = list.remove(i);
-				double weighted_score = w * score + (1-w) * PR.get(i).Value;
+				double PR_score = PR.get(i).Value;
+				FPair pagerank_pair = PR.remove(i);
+				double weighted_score = w * score + (1-w) * PR_score;
 				new_pair.changeValue(weighted_score);
 				filtered.add(new_pair);
 			}
