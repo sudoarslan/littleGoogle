@@ -547,6 +547,10 @@ public class Querier
 			{
 				System.out.print("\nSearch for: ");
 				String query = scanner.nextLine();
+				String query_space = query.replaceAll("\\s+","");
+
+				if(query_space.equals(""))
+					continue;
 
 				if(query.equals("quit"))
 					break;
