@@ -325,8 +325,31 @@ public class Crawler
 		if(crawled(link))
 			return 0;
 
-		// TODO: check last modified date
-		//if()
+		// Check the last-modified-date. 
+		// If inserted but updated externally, need to crawl again, otherwise return.
+		int stored_key = database.urlMapTable.getKey(link);
+		// The link is inserted already
+		if(stored_key != -1){
+			String last_modified_date = getLastModifiedDate(link);
+			//System.out.println("Testing: last_modified_date: " + last_modified_date);
+			//System.out.println(stored_key);
+
+			Vector<String> stored_meta = database.metaIndex.getAllEntriesMeta(stored_key);
+
+			//System.out.println(stored_meta);
+
+			if (stored_meta != null){
+				String stored_last_modified_date = stored_meta.get(1);
+				//System.out.println("======================== stored date!!" + stored_last_modified_date);
+
+				// If True, then there's no update on the page
+				if(stored_last_modified_date == last_modified_date){
+					System.out.println("Skip fresh link crawled");
+					return 0;
+				}
+			}
+		}
+
 
 		System.out.println(link);
 
