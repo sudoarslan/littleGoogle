@@ -8,7 +8,7 @@ public class Database
 	// Database filename
 	private static final String DATABASE_NAME = "indexDB";
 	// Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta", "parent", "history"};
+	private static final String[] HASHTABLE_NAME = {"inverted", "forward", "link", "vsm", "position", "word", "url", "meta", "parent"};
 
 	private RecordManager recman;
 
@@ -20,10 +20,10 @@ public class Database
 	public Index	positionIndex;
 	public Index    metaIndex;
 	public Index	parentIndex;
-	public Index	historyIndex;
 
 	public MapTable	wordMapTable;
 	public MapTable	urlMapTable;
+	public MapTable rankMapTable;
 
 	Database() throws IOException
 	{
@@ -36,8 +36,6 @@ public class Database
 		positionIndex = new Index(LoadOrCreate(HASHTABLE_NAME[4]), "P");
 		metaIndex	  = new Index(LoadOrCreate(HASHTABLE_NAME[7]), "M");
 		parentIndex   = new Index(LoadOrCreate(HASHTABLE_NAME[8]), "A");
-		historyIndex  = new Index(LoadOrCreate(HASHTABLE_NAME[9]), "H");
-
 
 		wordMapTable  = new MapTable(LoadOrCreate(HASHTABLE_NAME[5]), LoadOrCreate("inverted_" + HASHTABLE_NAME[5]));
 		urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[6]), LoadOrCreate("inverted_" + HASHTABLE_NAME[6]));

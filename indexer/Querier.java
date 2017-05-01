@@ -3,12 +3,17 @@ import java.io.*;
 import java.lang.Math;
 import java.util.Scanner;
 import java.util.regex.*;
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
+import jdbm.htree.HTree;
 
 public class Querier
 {
+	private RecordManager recman;
+
 	private Database database;
 	private StopStem stopStem;
-	private History history;
+	public HTree rank;
 	private Vector<String> allWords;
 
 
@@ -16,14 +21,33 @@ public class Querier
 	private static final int MAX_KEYWORD_NUM = 5;
 	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
 	private static final int NEAREST_WORD_TOLERATE_BELOW = 3; // nearest word's length can be 3 units shorter
+	private static final double S_WEIGHT = 0.9;
 
 	Querier() throws Exception
 	{
 		database = new Database();
 		stopStem = new StopStem();
-		history = new History();
 		allWords = database.wordMapTable.getAll(true);
+		recman = RecordManagerFactory.createRecordManager("indexDB");
+		rank = LoadOrCreate("rank");
+	}
 
+	private HTree LoadOrCreate(String hashtable_name) throws IOException
+	{
+		long recid = recman.getNamedObject(hashtable_name);
+		if(recid != 0)
+		{
+			System.out.println("Hashtable found, id: " + recid);
+			return HTree.load(recman, recid);
+		}
+		else
+		{
+			HTree hashtable = HTree.createInstance(recman);
+			recid = hashtable.getRecid();
+			recman.setNamedObject(hashtable_name, recid);
+			System.out.println("Hashtable not found, new id: " + recid);
+			return hashtable;
+		}
 	}
 
 	public double idf(int word_id) throws Exception
@@ -91,7 +115,7 @@ public class Querier
 	            	return (o1.Value < o2.Value)?-1:(o1.Value > o2.Value)?1:0;
 	            else
 	            	return (o1.Value < o2.Value)?1:(o1.Value > o2.Value)?-1:0;
-	        }           
+	        }
 	    });
 	}
 
@@ -267,9 +291,9 @@ public class Querier
 		// Extract title's words
 		HashSet<String> unique = new HashSet<String>(title_vec);
 		/*
-		Iterator iterator = unique.iterator(); 
+		Iterator iterator = unique.iterator();
 		while (iterator.hasNext()){
-	   		System.out.println("Value: "+iterator.next() + " ");  
+	   		System.out.println("Value: "+iterator.next() + " ");
 	   	}
 	   	*/
 
@@ -287,7 +311,7 @@ public class Querier
 
 		return results;
 	}
-	
+
 	public String findNearestWord(String word) throws Exception
 	{
 		//System.out.println("This word to be found for: " + word);
@@ -295,7 +319,7 @@ public class Querier
 		int minDistance = 100;
 		String nearestWord = "NA";
 		int len_of_word = word.length();
-		
+
 		for (String candidate_word : allWords){
 			int len_of_candidate = candidate_word.length();
 
@@ -308,7 +332,7 @@ public class Querier
 
 		return nearestWord;
 	}
-	
+
 
 	public String querySuggestion(String query) throws Exception
 	{
@@ -345,8 +369,13 @@ public class Querier
 		return result;
 	}
 
+	public String Str(int value)
+	{
+		return Integer.toString(value);
+	}
 
-	public SearchResult NaiveSearch(String query, Integer topK) throws Exception
+	// TODO: add pagerank
+	public SearchResult NaiveSearch(String query, Integer topK, double similairty_w) throws Exception
 	{
 		//Converts query into VSM of weights
 		// "normal unquoted" & "quoted"
@@ -364,8 +393,6 @@ public class Querier
 			//if it doesn't exist, then the document is not crawled
 			if(doc_weight == null)
 				continue;
-
-
 
 
 			//Summation of normal query score and quoted query score
@@ -393,8 +420,10 @@ public class Querier
 			}
 
 
-			Double score = doc_score + title_score;
-
+			Double similiarity_score = doc_score + title_score;
+			String skey = Str(i);
+			Double pagerank = (Double)rank.get(skey);
+			Double score = similairty_w * similiarity_score + (1-similairty_w) * pagerank;
 
 			scores.add(new FPair(i, score));
 		}
@@ -422,7 +451,7 @@ public class Querier
 
 
 			for(int j = 0; j < max_keyarray_length; j++){
-				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
+				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key),
 					resultKeywordFreq.get(j).Value);
 				result.KeywordVector.add(keywordPair);
 			}
@@ -444,7 +473,6 @@ public class Querier
 				}
 			}
 
-			
 			// Get parent links
 			Vector<String> parentLinkVecID = database.linkIndex.getAllEntriesParentLink(p.Key);
 
@@ -461,8 +489,9 @@ public class Querier
 			result.Score = p.Value;
 
 			results.add(result);
+			recman.close();
 		}
-		
+
 
 		// Get suggested query
 		String suggestedQuery = querySuggestion(query);
@@ -507,6 +536,8 @@ public class Querier
 
 			int top_k = TOP_K_RESULTS;
 
+			double similairty_w = S_WEIGHT;
+
 			if(args.length > 0)
 				top_k = Integer.parseInt(args[0]);
 
@@ -521,7 +552,7 @@ public class Querier
 					break;
 
 				// Print searching result by PageInfo
-				SearchResult searchResult = querier.NaiveSearch(query, top_k);
+				SearchResult searchResult = querier.NaiveSearch(query, top_k, similairty_w);
 				String suggestedQuery = searchResult.SuggestedQuery;
 				System.out.println("\nSuggested Query: " + suggestedQuery);
 
