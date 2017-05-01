@@ -345,6 +345,8 @@ public class Crawler
 				// If True, then there's no update on the page
 				if(stored_last_modified_date == last_modified_date){
 					System.out.println("Skip fresh link crawled");
+					extractLinks(link);
+					setHistory(link);
 					return 0;
 				}
 			}
