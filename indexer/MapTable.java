@@ -135,9 +135,9 @@ public class MapTable
 		else
 		{
 			FastIterator iter = BackwardHashtable.keys();
-			Integer key;
-			while( (key=(Integer)iter.next()) != null ){
-				allKeys.add(Str(key));
+			String key;
+			while( (key=(String)iter.next()) != null ){
+				allKeys.add(key);
 			}
 		}
 

@@ -11,7 +11,7 @@ public class Querier
 {
 	private RecordManager recman;
 
-	private Database database;
+	public Database database;
 	private StopStem stopStem;
 	public HTree rank;
 	private Vector<String> allWords;
@@ -540,8 +540,6 @@ public class Querier
 			if(args.length > 0)
 				similarity_w = Double.parseDouble(args[0]);
 
-			System.out.println("Displaying Top-" + top_k + " results");
-
 			while(true)
 			{
 				System.out.print("\nSearch for: ");
@@ -554,11 +552,20 @@ public class Querier
 				if(query.equals("quit"))
 					break;
 
+				// Enter parameters
+				System.out.print("\nNumber of results to return: ");
+				top_k = Integer.parseInt(scanner.nextLine());
+				System.out.print("\nCosine similarity weight: ");
+				similarity_w = Double.parseDouble(scanner.nextLine());
+
+
 				// Print searching result by PageInfo
+				long tStart = System.currentTimeMillis();
 				SearchResult searchResult = querier.NaiveSearch(query, top_k, similarity_w);
 				String suggestedQuery = searchResult.SuggestedQuery;
 				System.out.println("\nSuggested Query: " + suggestedQuery);
 
+				System.out.println("Displaying Top-" + top_k + " results");
 				System.out.println("\nSearch Result:");
 
 				for(PageInfo doc : searchResult.PageInfoVector){
@@ -573,6 +580,10 @@ public class Querier
 					System.out.println("---------------------------------------------------------------");
 				}
 
+				long tEnd = System.currentTimeMillis();
+				long tDelta = tEnd - tStart;
+				double elapsedSeconds = tDelta / 1000.0;
+				System.out.println("elasped time (sec): "+elapsedSeconds);
 			}
 		}
 		catch (Exception e)
