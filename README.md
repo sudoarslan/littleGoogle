@@ -26,11 +26,3 @@ javac -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar *.java IRUt
 java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Querier
 ~~~
 Enter the ```<query phrase>``` to proceed searching.
-
-
-To compile and calculate the pagerank for each page:
-~~~
-cd indexer
-javac -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar *.java IRUtilities/*.java
-java -cp htmlparser1_6/lib/htmlparser.jar:jdbm-1.0/lib/jdbm-1.0.jar:. Rank
-~~~
