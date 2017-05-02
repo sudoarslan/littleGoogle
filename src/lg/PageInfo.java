@@ -11,6 +11,7 @@ public class PageInfo
 	public Vector<WPair> KeywordVector;
 	public Vector<String> ParentLinkVector;
 	public Vector<String> ChildLinkVector;
+	public double Score;
 
 	// Empty Constructor
 	PageInfo()
@@ -20,12 +21,13 @@ public class PageInfo
 		LastModifiedDate = "";
 		SizeOfPage = 0;
 		KeywordVector = new Vector<WPair>();
-		ParentLinkVector = null;
-		ChildLinkVector = null;
+		ParentLinkVector = new Vector<String>();
+		ChildLinkVector = new Vector<String>();
+		Score = 0.0;
 	}
 
 	PageInfo(String title, String url, String lastModifiedDate, int sizeOfPage, Vector<WPair> keywordVector, 
-		Vector<String> parentLinkVector, Vector<String> childLinkVector)
+		Vector<String> parentLinkVector, Vector<String> childLinkVector, double score)
 	{
 		Title = title;
 		Url = url;
@@ -34,6 +36,7 @@ public class PageInfo
 		KeywordVector = keywordVector;
 		ParentLinkVector = parentLinkVector;
 		ChildLinkVector = childLinkVector;
+		Score = score;
 	}
 
 }

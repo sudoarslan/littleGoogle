@@ -46,10 +46,14 @@ public class Crawler
 		stopStem = new StopStem();
 	}
 
-	public double idf(int word_id) throws Exception
+	public double idf(int word_id, boolean isTitle) throws Exception
 	{
 		int N = database.urlMapTable.getMaxId();
-		int df = database.invertedIndex.getAllEntriesId(word_id).size();
+		int df = 0;
+		if(isTitle)
+			df = database.titleInvertedIndex.getAllEntriesId(word_id).size();
+		else
+			df = database.invertedIndex.getAllEntriesId(word_id).size();
 		return (Math.log(N) - Math.log(df)) / Math.log(2.0);
 	}
 
@@ -78,12 +82,39 @@ public class Crawler
 		return text.replaceAll("\\s+","_");
 	}
 
+	// Get the last-modified-date without connection provided
+	public String getLastModifiedDate(String target_url) throws Exception
+	{
+		// Create URL connection to retrieve header information
+		URL url = new URL(target_url);
+		URLConnection connection = url.openConnection();
+
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
+	// Get the last-modified-date with connection provided
+	public String getLastModifiedDate(String target_url, URLConnection connection) throws Exception
+	{
+		// Get last modification date
+		String last_modified_date = connection.getHeaderField("Last-Modified");
+		if (last_modified_date == "0" || last_modified_date == null)
+			last_modified_date = "N/A";
+
+		return String.valueOf(last_modified_date);
+	}
+
 	public void Finalize() throws Exception
 	{
 		//Stores weights(tf * idf) vector for each document
 		int max_doc = database.urlMapTable.getMaxId();
 		for(int i = 0; i < max_doc; i++)
 		{
+			// Handle document content
 			database.vsmIndex.removeRow(i);
 			//For each document, append all tf*idf to index
 			Vector<Pair> doc = database.forwardIndex.getAllEntriesId(i);
@@ -99,8 +130,29 @@ public class Crawler
 			{
 				Pair word = doc.get(j);
 				//length of entries per word = df of the word
-				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key) / max_tf);
+				database.vsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key, false) / max_tf);
 			}
+
+
+			// Handle document title
+			database.titleVsmIndex.removeRow(i);
+			//For each document, append all tf*idf to index
+			Vector<Pair> doc_title = database.titleForwardIndex.getAllEntriesId(i);
+			if(doc_title == null)
+				continue;
+
+			int max_tf_title = 0;
+			for(int j = 0; j < doc_title.size(); j++)
+				if(doc_title.get(j).Value > max_tf_title)
+					max_tf_title = doc_title.get(j).Value;
+
+			for(int j = 0; j < doc_title.size(); j++)
+			{
+				Pair word = doc_title.get(j);
+				//length of entries per word = df of the word
+				database.titleVsmIndex.appendEntry(i, word.Key, word.Value * idf(word.Key, true) / max_tf_title);
+			}
+
 		}
 
 		database.Finalize();
@@ -158,9 +210,8 @@ public class Crawler
 		URL url = new URL(parent);
 		URLConnection connection = url.openConnection();
 
-		// Get last modification date
-		String last_modified_date = connection.getHeaderField("Last-Modified");
-		metas.add(String.valueOf(last_modified_date));
+		// Get last-modified-date
+		metas.add(getLastModifiedDate(parent, connection));
 
 		// Get document size
 		String document_size = connection.getHeaderField("content-Length");
@@ -205,6 +256,30 @@ public class Crawler
 
 	}
 
+	//Find the occurence of each title in the string vector, save the frequency to the database
+	public void updateTitleIndex(String url, Vector<String> words) throws Exception
+	{
+		// Get the Document ID
+		int doc_id = database.urlMapTable.getKey(url);
+		if(doc_id == -1)
+			throw new Exception("Link not found, cannot insert word to index");
+
+		// Collect all the words in a Hash Set
+		HashSet<String> unique = new HashSet<String>(words);
+		// Iterate through all the words in the document
+		for(String word: unique)
+		{
+			// Get the term frequency(tf) of the word
+			int freq = Collections.frequency(words, word);
+			// Insert the word into wordMapTable and get the word ID
+			int word_id = database.wordMapTable.appendEntry(word);
+			// Insert the word into Inverted File: [word, document ID, term frequency]
+			database.titleInvertedIndex.updateEntry(word_id, doc_id, freq);
+			// Insert the word into the Forward Index: [document ID, word ID, term frequency]
+			database.titleForwardIndex.updateEntry(doc_id, word_id, freq);
+		}
+	}
+
 	public void updateLinkIndex(String url, Vector<String> links) throws Exception
 	{
 		// Insert the url into urlMapTable and get the url ID
@@ -233,9 +308,9 @@ public class Crawler
 		int index = 0;
 		for(String link: links)
 		{
-			System.out.println("parent URL:"+url+", coressponding ID:"+url_id);
+			System.out.println("parent URL:"+url+", corresponding ID:"+url_id);
 			int link_id = database.urlMapTable.getKey(link);
-			System.out.println("child URL:"+link+", coressponding ID:"+link_id);
+			System.out.println("child URL:"+link+", corresponding ID:"+link_id);
 			// Insert the parent links into the Link Index: [link ID, link index, parent link id]
 			database.parentIndex.appendEntry(link_id, index++, url_id);
 			System.out.println("append:"+link_id+", "+url_id);
@@ -244,6 +319,11 @@ public class Crawler
 
 	public void removeAllParent() throws Exception{
 		database.parentIndex.removeAll();
+	}
+
+	public void clearAll() throws Exception
+	{
+		database.ClearAll();
 	}
 
 	public void updateMetaIndex(String url, Vector<String> metas) throws Exception
@@ -266,6 +346,19 @@ public class Crawler
 			database.metaIndex.appendEntry(url_id, index++, underscored_meta);
 		}
 
+		String title = metas.get(0);
+		String[] title_array = title.split(" ");
+
+		Vector<String> stemmedTitle = new Vector<String>();
+		for(String word : title_array)
+		{
+			String p_word = word.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase();
+			if(!p_word.isEmpty() && !stopStem.isStopWord(p_word))
+				stemmedTitle.add(stopStem.stem(p_word));
+		}
+
+		//System.out.println(stemmedTitle.toString());
+		updateTitleIndex(url, stemmedTitle);
 	}
 
 	//Extract all links in the website
@@ -298,6 +391,34 @@ public class Crawler
 		if(crawled(link))
 			return 0;
 
+		// Check the last-modified-date. 
+		// If inserted but updated externally, need to crawl again, otherwise return.
+		int stored_key = database.urlMapTable.getKey(link);
+		// The link is inserted already
+		if(stored_key != -1){
+			String last_modified_date = getLastModifiedDate(link);
+			//System.out.println("Testing: last_modified_date: " + last_modified_date);
+			//System.out.println(stored_key);
+
+			Vector<String> stored_meta = database.metaIndex.getAllEntriesMeta(stored_key);
+
+			//System.out.println(stored_meta);
+			
+            if (stored_meta != null){
+				String stored_last_modified_date = stored_meta.get(1);
+				System.out.println("======================== stored date!!" + stored_last_modified_date);
+
+				// If True, then there's no update on the page
+				if(stored_last_modified_date.equals(last_modified_date)){
+					System.out.println("Skip fresh link crawled");
+					extractLinks(link);
+					setHistory(link);
+					return 0;
+				}
+			}
+		}
+
+
 		System.out.println(link);
 
 		Vector<String> extractedLinks = extractLinks(link);
@@ -306,8 +427,7 @@ public class Crawler
 		updateParentIndex(link, extractedLinks);
 		// Extract words: create Inverted Index & Forward Index
 		updateWordIndex(link, extractWords(link));
-
-		// TODO: update meta data for each page
+		// Update meta data for each page
 		updateMetaIndex(link, extractMetas(link));
 
 		setHistory(link);
@@ -321,7 +441,7 @@ public class Crawler
 		{
 			Crawler crawler = new Crawler();
 			// clear all data in parentIndex
-			crawler.removeAllParent();
+			//crawler.removeAllParent();
 			// Initialization
 			System.out.println("Initializing..");
 
@@ -338,6 +458,13 @@ public class Crawler
 
 			// Save the database
 			crawler.Finalize();
+
+			// rank table generates
+			Rank rank = new Rank();
+			rank.initializeAll();
+			rank.calculateAll();
+			rank.printAll();
+			rank.Finalize();
 		}
 		catch (Exception e)
 		{

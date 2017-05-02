@@ -11,25 +11,18 @@ import java.util.Vector;
 
 public class Rank
 {
-    // Hashtable filenames
-	private static final String[] HASHTABLE_NAME = {"rank", "link", "parent", "url"};
-
 	private RecordManager recman;
 	public HTree rank;
-    public Index linkIndex;
-    public Index parentIndex;
-    public MapTable	urlMapTable;
+	private Database database;
 
     private double d = 0.85;
-    private int iterationNum = 10;
+    private int iterationNum = 50;
 
 	Rank() throws Exception
     {
-		recman = RecordManagerFactory.createRecordManager("indexDB1");
-		rank = LoadOrCreate(HASHTABLE_NAME[0]);
-        linkIndex = new Index(LoadOrCreate(HASHTABLE_NAME[1]), "L");
-        parentIndex = new Index(LoadOrCreate(HASHTABLE_NAME[2]), "A");
-        urlMapTable	  = new MapTable(LoadOrCreate(HASHTABLE_NAME[3]), LoadOrCreate("inverted_" + HASHTABLE_NAME[3]));
+		database = new Database();
+		recman = RecordManagerFactory.createRecordManager("indexDB");
+		rank = LoadOrCreate("rank");
 	}
 
 	private HTree LoadOrCreate(String hashtable_name) throws IOException
@@ -94,7 +87,7 @@ public class Rank
         for (Pair parent: allParents){
 			int key = parent.getValue();
 			String skey = Str(key);
-            Vector<Pair> out = linkIndex.getAllEntriesId(key);
+            Vector<Pair> out = database.linkIndex.getAllEntriesId(key);
             int capcity = out.size();
 			Double previous_rank = (Double)rank.get(skey);
             value += d * (previous_rank/capcity);
@@ -106,11 +99,11 @@ public class Rank
 		for (int i = 0; i < iterationNum; i++)
         {
 			// loop through all documents(urls)
-        	Vector<String> allKeys = urlMapTable.getAllKeys(true);
+        	Vector<String> allKeys = database.urlMapTable.getAllKeys(true);
         	for (String key : allKeys)
         	{
             	// get its parents
-            	Vector<Pair> allParents = parentIndex.getAllEntriesId(Int(key));
+            	Vector<Pair> allParents = database.parentIndex.getAllEntriesId(Int(key));
 				double rankValue = pageRank(d, allParents);
 				updateEntry(key, rankValue);
         	}
@@ -119,7 +112,7 @@ public class Rank
 
     // initialize all rank to 1
     public void initializeAll() throws IOException{
-		Vector<String> allKeys = urlMapTable.getAllKeys(true);
+		Vector<String> allKeys = database.urlMapTable.getAllKeys(true);
         for (String key : allKeys){
 			addEntry(key, 1);
 		}
@@ -143,22 +136,5 @@ public class Rank
 		recman.commit();
 		recman.close();
 		System.out.println("Closed");
-	}
-
-    public static void main(String[] args)
-	{
-		try
-		{
-            Rank rank = new Rank();
-            rank.initializeAll();
-            rank.calculateAll();
-			rank.printAll();
-			rank.Finalize();
-		}
-		catch (Exception e)
-		{
-			System.err.println("Error1");
-			System.err.println(e.toString());
-		}
 	}
 }

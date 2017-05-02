@@ -5,20 +5,52 @@ import java.io.*;
 import java.lang.Math;
 import java.util.Scanner;
 import java.util.regex.*;
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
+import jdbm.htree.HTree;
 
 public class Querier
 {
-	private Database database;
+	private RecordManager recman;
+
+	public Database database;
 	private StopStem stopStem;
-	private History history;
+	public HTree rank;
+	private Vector<String> allWords;
+
 
 	private static final int TOP_K_RESULTS = 50;
+	private static final int MAX_KEYWORD_NUM = 5;
+	private static final int NEAREST_WORD_TOLERATE_ABOVE = 3; // nearest word's length can be 3 units longer
+	private static final int NEAREST_WORD_TOLERATE_BELOW = 3; // nearest word's length can be 3 units shorter
+	private static final double S_WEIGHT = 1.0;
+	private static final double TITLE_FAVOR_WEIGHT = 2.0;
 
 	Querier() throws Exception
 	{
 		database = new Database();
 		stopStem = new StopStem();
-		history = new History();
+		allWords = database.wordMapTable.getAll(true);
+		recman = RecordManagerFactory.createRecordManager("indexDB");
+		rank = LoadOrCreate("rank");
+	}
+
+	private HTree LoadOrCreate(String hashtable_name) throws IOException
+	{
+		long recid = recman.getNamedObject(hashtable_name);
+		if(recid != 0)
+		{
+			System.out.println("Hashtable found, id: " + recid);
+			return HTree.load(recman, recid);
+		}
+		else
+		{
+			HTree hashtable = HTree.createInstance(recman);
+			recid = hashtable.getRecid();
+			recman.setNamedObject(hashtable_name, recid);
+			System.out.println("Hashtable not found, new id: " + recid);
+			return hashtable;
+		}
 	}
 
 	public double idf(int word_id) throws Exception
@@ -34,6 +66,11 @@ public class Querier
 	}
 
 	public static void printlnWithLabel(String label, int num) throws Exception
+	{
+		System.out.println(label + ": " + String.valueOf(num));
+	}
+
+	public static void printlnWithLabel(String label, double num) throws Exception
 	{
 		System.out.println(label + ": " + String.valueOf(num));
 	}
@@ -81,7 +118,7 @@ public class Querier
 	            	return (o1.Value < o2.Value)?-1:(o1.Value > o2.Value)?1:0;
 	            else
 	            	return (o1.Value < o2.Value)?1:(o1.Value > o2.Value)?-1:0;
-	        }           
+	        }
 	    });
 	}
 
@@ -239,47 +276,77 @@ public class Querier
 		return database.vsmIndex.getAllEntriesVSM(doc_id);
 	}
 
-	// TODO: get the title of a document
 	// The title's tf of the document
 	public Vector<FPair> TitleWeight(int doc_id) throws Exception
 	{
-		Vector<FPair> results = new Vector<FPair>();
-		//Get title of a document
-		String title = database.metaIndex.getAllEntriesMeta(doc_id).get(0);
-		//System.out.println(title);
+		//Get all title of a document
+		return database.titleVsmIndex.getAllEntriesVSM(doc_id);
+	}
 
-		String[] title_array = title.split(" ");
-		//System.out.println(Arrays.toString(title_array));
+	public String findNearestWord(String word) throws Exception
+	{
+		//System.out.println("This word to be found for: " + word);
 
-		Vector<String> title_vec = new Vector<String>(Arrays.asList(title_array));
-		//System.out.println(title_vec.toString());
+		int minDistance = 100;
+		String nearestWord = "NA";
+		int len_of_word = word.length();
 
-		// Extract title's words
-		HashSet<String> unique = new HashSet<String>(title_vec);
-		/*
-		Iterator iterator = unique.iterator(); 
-		while (iterator.hasNext()){
-	   		System.out.println("Value: "+iterator.next() + " ");  
-	   	}
-	   	*/
+		for (String candidate_word : allWords){
+			int len_of_candidate = candidate_word.length();
 
-		// Iterate through all the unique word
-		for(String word: unique)
-		{
-			// Get the term frequency(tf) of the word
-			int freq = Collections.frequency(title_vec, word);
-			int word_id = database.wordMapTable.getKey(word);
-
-			FPair result = new FPair(word_id, freq);
-
-			results.add(result);
+			int levDistance = Levenshtein.distance(word, candidate_word);
+			if(levDistance < minDistance){
+				minDistance = levDistance;
+				nearestWord = candidate_word;
+			}
 		}
 
-		return results;
+		return nearestWord;
 	}
 
 
-	public Vector<PageInfo> NaiveSearch(String query, Integer topK) throws Exception
+	public String querySuggestion(String query) throws Exception
+	{
+		//split and filter query string to vector space
+		String[] word_array = query.replaceAll("[^\\w\\s]|_", "").trim().toLowerCase().split(" ");
+
+		Vector<String> suggest_query_vector = new Vector<String>();
+
+		for (String word : word_array){
+			if(stopStem.isStopWord(word)){
+				suggest_query_vector.add(word);
+			} else {
+
+				String stem_word = stopStem.stem(word);
+
+				int validity = database.wordMapTable.getKey(stem_word);
+
+				if(validity == -1){
+					suggest_query_vector.add(findNearestWord(word));
+				} else {
+					suggest_query_vector.add(word);
+				}
+
+			}
+		}
+
+		String result = "";
+		for (String word : suggest_query_vector){
+			result += word + " ";
+		}
+		//result.substring(result.length()-2);
+		//String result = suggest_query_vector.toString();
+
+		return result;
+	}
+
+	public String Str(int value)
+	{
+		return Integer.toString(value);
+	}
+
+	// TODO: add pagerank
+	public SearchResult NaiveSearch(String query, Integer topK, double similairty_w) throws Exception
 	{
 		//Converts query into VSM of weights
 		// "normal unquoted" & "quoted"
@@ -290,6 +357,7 @@ public class Querier
 		int max_doc = database.urlMapTable.getMaxId();
 
 		Vector<FPair> scores = new Vector<FPair>();
+		Vector<FPair> PR = new Vector<FPair>();
 		for(int i = 0; i < max_doc; i++)
 		{
 			//Get tf-idf vector of a document
@@ -297,8 +365,6 @@ public class Querier
 			//if it doesn't exist, then the document is not crawled
 			if(doc_weight == null)
 				continue;
-
-
 
 
 			//Summation of normal query score and quoted query score
@@ -320,27 +386,28 @@ public class Querier
 				title_score += QCosSim(query_weight, title_weight);
 
 			//System.out.println(String.valueOf(i) + ": " + String.valueOf(title_score));
-
+			/*
 			if(title_score > 0){
 				System.out.println("This work! " + String.valueOf(i));
 			}
+			*/
 
 
-			Double score = doc_score + title_score;
-
+			Double score = doc_score + title_score * TITLE_FAVOR_WEIGHT;
+			String skey = Str(i);
+			Double pagerank = (Double)rank.get(skey);
+			PR.add(new FPair(i, pagerank));
 
 			scores.add(new FPair(i, score));
 		}
 
-		//System.out.println("Finish iteration");
-
 
 		// All search results in FPAir format
-		Vector<FPair> list = FPair.TopK(scores, topK);
+		Vector<FPair> list = FPair.TopK(scores, topK, PR, similairty_w);
 		// All search results
 		Vector<PageInfo> results = new Vector<PageInfo>();
 
-
+		// Create PageInfo for each page
 		for(FPair p : list){
 			// Single search result
 			PageInfo result = new PageInfo();
@@ -353,14 +420,14 @@ public class Querier
 			sort(resultKeywordFreq, false);
 
 			// Avoid error when key word list length < 5
-			int max_keyarray_length = (resultKeywordFreq.size() > 5)? 5 : resultKeywordFreq.size();
+			int max_keyarray_length = (resultKeywordFreq.size() > MAX_KEYWORD_NUM)? MAX_KEYWORD_NUM : resultKeywordFreq.size();
+
 
 			for(int j = 0; j < max_keyarray_length; j++){
-				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key), 
+				WPair keywordPair = new WPair(database.wordMapTable.getEntry(resultKeywordFreq.get(j).Key),
 					resultKeywordFreq.get(j).Value);
 				result.KeywordVector.add(keywordPair);
 			}
-
 
 			// Get title, url, date and size
 			result.Title = resultMeta.get(0);
@@ -369,19 +436,41 @@ public class Querier
 			result.SizeOfPage = Integer.parseInt(resultMeta.get(2));
 
 			// Get child links
-			result.ChildLinkVector = database.linkIndex.getAllEntriesChildLink(p.Key);
+			Vector<String> childLinkVecID = database.linkIndex.getAllEntriesChildLink(p.Key);
 
-			// TODO: Get parent links
-			result.ParentLinkVector = database.linkIndex.getAllEntriesParentLink(p.Key);
+			if(childLinkVecID == null){
+				result.ChildLinkVector.add("N/A");
+			} else {
+				for (String id : childLinkVecID){
+					result.ChildLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+				}
+			}
+
+			// Get parent links
+			Vector<String> parentLinkVecID = database.linkIndex.getAllEntriesParentLink(p.Key);
+
+			if(parentLinkVecID == null){
+				result.ParentLinkVector.add("N/A");
+			} else {
+				for (String id : parentLinkVecID){
+					result.ParentLinkVector.add(database.urlMapTable.getEntry(Integer.parseInt(id)));
+				}
+			}
+
+
+			// Store score
+			result.Score = p.Value;
 
 			results.add(result);
 		}
-			
-			
 
-		System.out.println("\nSearch Result:\n");
-		return results;
-		//return links;
+
+		// Get suggested query
+		String suggestedQuery = querySuggestion(query);
+
+		SearchResult searchResults = new SearchResult(suggestedQuery, results);
+
+		return searchResults;
 	}
 
 	//Prints all websites containing any of the query words
@@ -416,43 +505,59 @@ public class Querier
 		{
 			Querier querier = new Querier();
 			Scanner scanner = new Scanner(System.in);
-			History history = new History();
 
 			int top_k = TOP_K_RESULTS;
 
-			if(args.length > 0)
-				top_k = Integer.parseInt(args[0]);
+			double similarity_w = S_WEIGHT;
 
-			System.out.println("Displaying Top-" + top_k + " results");
+			if(args.length > 0)
+				similarity_w = Double.parseDouble(args[0]);
 
 			while(true)
 			{
 				System.out.print("\nSearch for: ");
 				String query = scanner.nextLine();
+				String query_space = query.replaceAll("\\s+","");
+
+				if(query_space.equals(""))
+					continue;
 
 				if(query.equals("quit"))
 					break;
 
+				// Enter parameters
+				System.out.print("\nNumber of results to return: ");
+				top_k = Integer.parseInt(scanner.nextLine());
+				System.out.print("\nCosine similarity weight: ");
+				similarity_w = Double.parseDouble(scanner.nextLine());
+
 
 				// Print searching result by PageInfo
-				for(PageInfo doc : querier.NaiveSearch(query, top_k)){
+				long tStart = System.currentTimeMillis();
+				SearchResult searchResult = querier.NaiveSearch(query, top_k, similarity_w);
+				String suggestedQuery = searchResult.SuggestedQuery;
+				System.out.println("\nSuggested Query: " + suggestedQuery);
+
+				System.out.println("Displaying Top-" + top_k + " results");
+				System.out.println("\nSearch Result:");
+
+				for(PageInfo doc : searchResult.PageInfoVector){
 					printlnWithLabel("Title", doc.Title);
 					printlnWithLabel("Url", doc.Url);
 					printlnWithLabel("Last Modified Date", doc.LastModifiedDate);
 					printlnWithLabel("Size of Page", doc.SizeOfPage);
+					printlnWithLabel("Score", doc.Score);
 					printlnWithLabelWPair("Keywords", doc.KeywordVector);
 					printlnWithLabel("Child Links", doc.ChildLinkVector);
 					printlnWithLabel("Parent Links", doc.ParentLinkVector);
 					System.out.println("---------------------------------------------------------------");
 				}
 
-				// Add to query history
-				history.addEntry(query);
-				System.out.println("\nSearch history: ");
-				history.printAll();
-
+				long tEnd = System.currentTimeMillis();
+				long tDelta = tEnd - tStart;
+				double elapsedSeconds = tDelta / 1000.0;
+				System.out.println("elasped time (sec): "+elapsedSeconds);
 			}
-			history.Finalize();
 		}
 		catch (Exception e)
 		{
