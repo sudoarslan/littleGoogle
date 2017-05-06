@@ -214,7 +214,7 @@
     $( function() {
         var suggestions = [];
         <% if (request.getAttribute("queryHistory") != null) { for (String s: (Set<String>) request.getAttribute("queryHistory")) { %>
-        suggestions.push("<%=s%>");
+        suggestions.push("<%=s.replace('"', ' ')%>");
         <% } } %>
         $( "#inputSearchQuery" ).autocomplete({
             minLength: 0,

@@ -57,15 +57,15 @@ public class Server extends HttpServlet {
             long start_time = 0;
             long end_time = 0;
             try {
-                history.addEntry("123", request.getParameter("query"));
+                history.addEntry(userId, request.getParameter("query"));
                 request.setAttribute("suggest", null);
                 start_time = System.nanoTime();
                 SearchResult searchResult = querier.NaiveSearch(request.getParameter("query"), Integer.parseInt(request.getParameter("topk")), Double.parseDouble(request.getParameter("simValue")));
                 end_time = System.nanoTime();
                 Vector<PageInfo> queryResult = searchResult.PageInfoVector;
                 request.setAttribute("queryResult", queryResult);
-                Set<String> queryHistory = new HashSet<String>(Arrays.asList(history.getHistory("123")));
-                for(String s: history.getHistory("123")) {
+                Set<String> queryHistory = new HashSet<String>(Arrays.asList(history.getHistory(userId)));
+                for(String s: history.getHistory(userId)) {
                     System.out.println(s);
                 }
                 if(searchResult.SuggestedQuery.indexOf((String)request.getParameter("query")) != 0){
